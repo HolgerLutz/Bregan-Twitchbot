@@ -8,7 +8,7 @@ namespace Twitch_Bot
 {
     internal class TwitchBotGeneralMessages
     {
-        public static void TestMethod()
+        public static void TwitchMessageSetup()
         {
             TwitchBotConnection.client.OnConnected += BotConnectedToChannel;
             TwitchBotConnection.client.OnNewSubscriber += NewSub;

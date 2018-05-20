@@ -28,7 +28,7 @@ namespace Twitch_Bot
 
             apiClient = new TwitchAPI();
             apiClient.Settings.ClientId = "krn1npp2luabpkdalei2nenf8nf8n4vep";
-            TwitchBotGeneralMessages.TestMethod();
+            TwitchBotGeneralMessages.TwitchMessageSetup();
         }
 
     }
