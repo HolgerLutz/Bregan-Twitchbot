@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TwitchLib.Api;
+using TwitchLib.PubSub.Events;
 
 namespace Twitch_Bot
 {
@@ -14,12 +16,11 @@ namespace Twitch_Bot
             TwitchBotConnection.client.OnNewSubscriber += NewSub;
             TwitchBotConnection.client.OnReSubscriber += Resub;
             TwitchBotConnection.client.OnGiftedSubscription += GiftSub;
-            TwitchBotConnection.client.OnLog += Log;
         }
 
         private static void GiftSub(object sender, TwitchLib.Client.Events.OnGiftedSubscriptionArgs e)
         {
-            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "PogChamp thank you " + e.GiftedSubscription + ""); //TODO: SEE IF NAME OF GIFTER CAN BE DISPLAYED
+            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "PogChamp thank you " + e.GiftedSubscription.DisplayName + " for gifting " + e.GiftedSubscription.MsgParamRecipientUserName + " a sub PogChamp <3 <3 <3");
         }
 
         private static void Resub(object sender, TwitchLib.Client.Events.OnReSubscriberArgs e)
@@ -32,14 +33,11 @@ namespace Twitch_Bot
             TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "Welcome " + e.Subscriber.DisplayName + " to the " + TwitchBotConnection.channelConnectName + " squad!");
         }
 
-        private static void Log(object sender, TwitchLib.Client.Events.OnLogArgs e)
-        {
-            Console.WriteLine(e.Data);
-        }
-
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
             TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "Successfully connected");
         }
+
+
     }
 }

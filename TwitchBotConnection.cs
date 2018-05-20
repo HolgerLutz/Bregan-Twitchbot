@@ -15,10 +15,10 @@ namespace Twitch_Bot
     {
         public static TwitchClient client;
         public static TwitchAPI apiClient;
-        public const string channelConnectName = "blocksssssss"; 
+        public const string channelConnectName = "blocksssssss";
 
-        readonly ConnectionCredentials credentials = new ConnectionCredentials("dadbot7373", "oauth:iwsasga1qzxvbhcs5q5jllk3v1pzhy");
-
+        //TEST ACCOUNT DETAILS: readonly ConnectionCredentials credentials = new ConnectionCredentials("dadbot7373", "oauth:iwsasga1qzxvbhcs5q5jllk3v1pzhy");
+        readonly ConnectionCredentials credentials = new ConnectionCredentials("blocksssssss", "oauth:1zpurobffxjmpu5l9h81cxtat0bjyf");
         internal void Connect()
         {
             Console.WriteLine("Attempting to connect to twitch chat");
@@ -29,6 +29,7 @@ namespace Twitch_Bot
             apiClient = new TwitchAPI();
             apiClient.Settings.ClientId = "krn1npp2luabpkdalei2nenf8nf8n4vep";
             TwitchBotGeneralMessages.TwitchMessageSetup();
+            BotLogging.BotLoggingStart();
         }
 
     }
