@@ -120,6 +120,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotLogging.cs" />
+    <Compile Include="Queue System\PlayerQueueCommands.cs" />
+    <Compile Include="Queue System\PlayerQueueSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TwitchBotConnection.cs" />

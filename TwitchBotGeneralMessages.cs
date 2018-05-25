@@ -16,7 +16,7 @@ namespace Twitch_Bot
             TwitchBotConnection.client.OnNewSubscriber += NewSub;
             TwitchBotConnection.client.OnReSubscriber += Resub;
             TwitchBotConnection.client.OnGiftedSubscription += GiftSub;
-            PubSubConnection.pubSubClient.OnBitsReceived += BitsDonated;
+            //PubSubConnection.pubSubClient.OnBitsReceived += BitsDonated; Needs channel auth owner
         }
 
         //Gifted subs
@@ -38,13 +38,14 @@ namespace Twitch_Bot
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
             TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "Successfully connected");
+            Console.WriteLine("[Twitch Connection] Bot Sucessfully connected");
         }
-        //Bits donations
-        private static void BitsDonated(object sender, OnBitsReceivedArgs e)
-        {
-            Console.WriteLine($"Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
-            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"hoooo {e.Username} has donated + {e.BitsUsed} with a grand total of {e.TotalBitsUsed} donated PogChamp");
-        }
+        //Bits donations --------------- NEEDS auth from channel owner
+//        private static void BitsDonated(object sender, OnBitsReceivedArgs e)
+//        {
+//            Console.WriteLine($"Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
+//            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"hoooo {e.Username} has donated + {e.BitsUsed} with a grand total of {e.TotalBitsUsed} donated PogChamp");
+//        }
 
     }
 }

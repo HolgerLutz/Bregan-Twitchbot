@@ -46,9 +46,8 @@ namespace Twitch_Bot
 
         private static void MessageRecieved(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
         {
-            Console.WriteLine($"[Chat Message Recieved] {DateTime.Now}: {e.ChatMessage.DisplayName} : {e.ChatMessage.Message}");
+            Console.WriteLine($"[Chat Message Recieved] {DateTime.Now}: {e.ChatMessage.DisplayName}: {e.ChatMessage.Message}");
         }
-
 
     }
 }
