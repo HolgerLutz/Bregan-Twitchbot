@@ -120,6 +120,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotLogging.cs" />
+    <Compile Include="Commands\CommandListener.cs" />
+    <Compile Include="Commands\Eight_Ball.cs" />
     <Compile Include="Queue System\PlayerQueueCommands.cs" />
     <Compile Include="Queue System\PlayerQueueSystem.cs" />
     <Compile Include="Program.cs" />

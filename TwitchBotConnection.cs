@@ -38,6 +38,7 @@ namespace Twitch_Bot
 
             TwitchBotGeneralMessages.TwitchMessageSetup();
             PlayerQueueCommands.QueueSystemCommandSetup();
+            CommandListener.CommandListenerSetup();
         }
 
     }

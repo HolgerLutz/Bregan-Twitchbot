@@ -36,9 +36,9 @@ namespace Twitch_Bot
             _playerQueue.Remove(user);
         }
 
-        public static void QueueRemove4()
+        public static void QueueRemove3()
         {
-            if (_playerQueue.Count <= 4)
+            if (_playerQueue.Count <= 3)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has been cleared");
@@ -47,7 +47,7 @@ namespace Twitch_Bot
                 return;
             }
 
-            for (int i = 4; i > 0; i--)
+            for (int i = 2; i >= 0; i--)
             {
                 _playerQueue.RemoveAt(i);
             }
@@ -69,7 +69,7 @@ namespace Twitch_Bot
         {
 
             //If the queue contains less than 4 players return the current amount
-            if (_playerQueue.Count <= 4)
+            if (_playerQueue.Count <= 3)
             {
                 return String.Join(", ", _playerQueue);
             }
@@ -78,7 +78,7 @@ namespace Twitch_Bot
 
             var nextPlayers = new List<string>();
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 nextPlayers.Add(_playerQueue[i]);
             }

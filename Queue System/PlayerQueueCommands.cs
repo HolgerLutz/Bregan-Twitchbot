@@ -28,9 +28,9 @@ namespace Twitch_Bot
                     break;
             }
 
-            if (e.ChatMessage.Message == "!remove4" && e.ChatMessage.IsModerator)
+            if (e.ChatMessage.Message == "!remove3" && e.ChatMessage.IsModerator)
             {
-                PlayerQueueSystem.QueueRemove4();
+                PlayerQueueSystem.QueueRemove3();
                 TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"{e.ChatMessage.Username}: the current players have been removed");
             }
             

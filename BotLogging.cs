@@ -16,6 +16,7 @@ namespace Twitch_Bot
             TwitchBotConnection.client.OnUserJoined += UserJoinedStream;
             TwitchBotConnection.client.OnUserLeft += UserLeftStream;
             TwitchBotConnection.client.OnNewSubscriber += NewSub;
+            TwitchBotConnection.client.OnGiftedSubscription += NewGiftSub;
             //TwitchBotConnection.client.OnLog += Client_OnLog;
         }
 
@@ -29,8 +30,14 @@ namespace Twitch_Bot
         {
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine($"[New Subscriber] {DateTime.Now}: {e.Subscriber.DisplayName} has just subbed!");
+            Console.ResetColor();
         }
-
+        private static void NewGiftSub(object sender, TwitchLib.Client.Events.OnGiftedSubscriptionArgs e)
+        {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine($"[New Gift Subscriber] {DateTime.Now}: {e.GiftedSubscription.DisplayName} has just subbed!");
+            Console.ResetColor();
+        }
         private static void UserJoinedStream(object sender, TwitchLib.Client.Events.OnUserJoinedArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
