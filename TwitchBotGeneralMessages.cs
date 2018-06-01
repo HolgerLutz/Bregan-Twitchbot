@@ -33,7 +33,7 @@ namespace Twitch_Bot
         //Resubscriptions
         private static void Resub(object sender, TwitchLib.Client.Events.OnReSubscriberArgs e)
         {
-            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} with the message {e.ReSubscriber.ResubMessage} <3 <3 <3 <3 blocksWOT");
+            TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with the message {e.ReSubscriber.ResubMessage} <3 <3 <3 <3 blocksWOT");
         }
         //New subscription
         private static void NewSub(object sender, TwitchLib.Client.Events.OnNewSubscriberArgs e)

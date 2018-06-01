@@ -39,6 +39,9 @@ namespace Twitch_Bot
             TwitchBotGeneralMessages.TwitchMessageSetup();
             PlayerQueueCommands.QueueSystemCommandSetup();
             CommandListener.CommandListenerSetup();
+
+            Console.WriteLine(DateTime.Now);
+
         }
 
     }
@@ -59,7 +62,7 @@ namespace Twitch_Bot
             {
                 Console.WriteLine("Connected?");
                 pubSubClient.ListenToBitsEvents(TwitchApiConnection.GetChannelId());
-                pubSubClient.SendTopics("k4bmphnnrihhvhpb9ux82obxv2vthy"); //NEEDS AUTH CODE OF STREAMER
+                pubSubClient.SendTopics(""); //NEEDS AUTH CODE OF STREAMER
             }
 
             void PubSubClientOnListenResponse(object sender, TwitchLib.PubSub.Events.OnListenResponseArgs e)
