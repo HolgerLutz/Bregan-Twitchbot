@@ -1,4 +1,5 @@
 ﻿using System;
+using Bregan_TwitchBot.Connection;
 
 namespace Bregan_TwitchBot.Logging
 {

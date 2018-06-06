@@ -7,6 +7,8 @@ namespace Bregan_TwitchBot.Commands.Queue
     {
         private static List<string> _playerQueue;
         //TODO: Move Console logging to BotLogging.cs? 
+
+        //Create queue as soon as the bot starts
         public static void QueueCreate()
         {
             _playerQueue = new List<string>();
@@ -14,12 +16,12 @@ namespace Bregan_TwitchBot.Commands.Queue
             Console.WriteLine("[Player Queue] Player queue sucessfully created");
             Console.ResetColor();
         }
-
+        //Check if user is in queue - don't want to add same person to queue twice
         public static bool QueueUserCheck(string user)
         {
             return _playerQueue.Contains(user); 
         }
-
+        //Add user to the end of the player queue
         public static void QueueAdd(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -27,7 +29,7 @@ namespace Bregan_TwitchBot.Commands.Queue
             Console.ResetColor();
             _playerQueue.Add(user);
         }
-
+        //Users can leave the queue if they want
         public static void QueueRemove(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -35,10 +37,10 @@ namespace Bregan_TwitchBot.Commands.Queue
             Console.ResetColor();
             _playerQueue.Remove(user);
         }
-
+        //Remove the first 3 people of the queue TODO: have an option in config to change how many people?
         public static void QueueRemove3()
         {
-            if (_playerQueue.Count <= 3)
+            if (_playerQueue.Count <= 3) //If theres only 3 or less then the whole queue can be wiped clean
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has been cleared");
@@ -47,7 +49,7 @@ namespace Bregan_TwitchBot.Commands.Queue
                 return;
             }
 
-            for (int i = 2; i >= 0; i--)
+            for (int i = 2; i >= 0; i--) //If there are more than 3 then loop through the first 3 people
             {
                 _playerQueue.RemoveAt(i);
             }
@@ -57,7 +59,7 @@ namespace Bregan_TwitchBot.Commands.Queue
             Console.ResetColor();
         }
 
-        public static void QueueClear()
+        public static void QueueClear() //Wipes queue completely ignoring amount of people
         {
             _playerQueue.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -88,8 +90,10 @@ namespace Bregan_TwitchBot.Commands.Queue
 
         public static string CurrentQueue()
         {
-            return String.Join(", ", _playerQueue);
+            return String.Join(", ", _playerQueue); //Just show everyone in the queue and splitting them with a comma
         }
+
+        //TODO: add their queue position? 
 
     }
 }

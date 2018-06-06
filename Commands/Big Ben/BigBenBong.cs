@@ -1,4 +1,5 @@
 ﻿using System;
+using Bregan_TwitchBot.Connection;
 
 namespace Bregan_TwitchBot.Commands.Big_Ben
 {
@@ -8,7 +9,7 @@ namespace Bregan_TwitchBot.Commands.Big_Ben
         public static void Bong()
         {
             _hasBongedThisHour = false;
-            var timer = new System.Timers.Timer(15000);
+            var timer = new System.Timers.Timer(15000); //Check every 15 secs
             timer.Start();
             timer.Elapsed += TimeCheck;
             
@@ -28,7 +29,7 @@ namespace Bregan_TwitchBot.Commands.Big_Ben
             {
                 return;
             }
-            switch (DateTime.Now.Hour)
+            switch (DateTime.Now.Hour) //As this uses a 24h clock both am and pm have to be accounted for
             {
                 case 1:
                 case 13:

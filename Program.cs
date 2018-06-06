@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Bregan_TwitchBot.Commands.Big_Ben;
+using Bregan_TwitchBot.Connection;
 
 namespace Bregan_TwitchBot
 {

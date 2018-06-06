@@ -218,11 +218,10 @@
     <Compile Include="Commands\CommandListener.cs" />
     <Compile Include="Commands\DadJoke\DadJoke.cs" />
     <Compile Include="Commands\8Ball\Eight_Ball.cs" />
-    <Compile Include="Commands\Queue\PlayerQueueCommands.cs" />
     <Compile Include="Commands\Queue\PlayerQueueSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TwitchBotConnection.cs" />
+    <Compile Include="Connection\TwitchBotConnection.cs" />
     <Compile Include="Commands\TwitchBotGeneralMessages.cs" />
   </ItemGroup>
   <ItemGroup>

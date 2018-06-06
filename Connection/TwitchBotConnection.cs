@@ -7,7 +7,7 @@ using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
-namespace Bregan_TwitchBot
+namespace Bregan_TwitchBot.Connection
 {
     internal class TwitchBotConnection
     {
@@ -15,7 +15,7 @@ namespace Bregan_TwitchBot
         public const string ChannelConnectName = "blocksssssss";
 
         //TEST ACCOUNT DETAILS: readonly ConnectionCredentials credentials = new ConnectionCredentials("dadbot7373", "oauth:iwsasga1qzxvbhcs5q5jllk3v1pzhy");
-        readonly ConnectionCredentials _credentials = new ConnectionCredentials("blocksssssssbot", "oauth:p2lf4nhslc9a96vd3bj9aa11xnka9q");
+        private readonly ConnectionCredentials _credentials = new ConnectionCredentials("blocksssssssbot", "oauth:p2lf4nhslc9a96vd3bj9aa11xnka9q");
         internal void Connect()
         {
             Console.WriteLine("Attempting to connect to twitch chat");
@@ -23,21 +23,20 @@ namespace Bregan_TwitchBot
             Client.Initialize(_credentials, ChannelConnectName);
             Client.Connect();
 
-            var twitchApi = new TwitchApiConnection();
-            twitchApi.Connect();
+            //Connect PubSub and API
 
             //var pubsub = new PubSubConnection();
+            var twitchApi = new TwitchApiConnection();
+            twitchApi.Connect();
             //pubsub.Connect();
 
+            //Logging
             BotLogging.BotLoggingStart();
+
+
             PlayerQueueSystem.QueueCreate();
-
             TwitchBotGeneralMessages.TwitchMessageSetup();
-            PlayerQueueCommands.QueueSystemCommandSetup();
             CommandListener.CommandListenerSetup();
-
-            Console.WriteLine(DateTime.Now);
-
         }
 
     }
