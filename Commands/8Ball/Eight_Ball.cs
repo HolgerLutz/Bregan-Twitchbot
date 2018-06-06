@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Twitch_Bot
+namespace Bregan_TwitchBot.Commands._8Ball
 {
     internal class EightBall
     {

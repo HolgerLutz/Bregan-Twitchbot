@@ -1,31 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bregan_TwitchBot.Commands;
+using Bregan_TwitchBot.Commands.Queue;
+using Bregan_TwitchBot.Logging;
 using TwitchLib.Api;
-using TwitchLib.Api.Models.v5.Channels;
-using TwitchLib.Api.Models.v5.Subscriptions;
-using TwitchLib.Api.Models.v5.Users;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
-namespace Twitch_Bot
+namespace Bregan_TwitchBot
 {
     internal class TwitchBotConnection
     {
-        public static TwitchClient client;
-        public const string channelConnectName = "blocksssssss";
+        public static TwitchClient Client;
+        public const string ChannelConnectName = "blocksssssss";
 
         //TEST ACCOUNT DETAILS: readonly ConnectionCredentials credentials = new ConnectionCredentials("dadbot7373", "oauth:iwsasga1qzxvbhcs5q5jllk3v1pzhy");
-        readonly ConnectionCredentials credentials = new ConnectionCredentials("blocksssssssbot", "oauth:p2lf4nhslc9a96vd3bj9aa11xnka9q");
+        readonly ConnectionCredentials _credentials = new ConnectionCredentials("blocksssssssbot", "oauth:p2lf4nhslc9a96vd3bj9aa11xnka9q");
         internal void Connect()
         {
             Console.WriteLine("Attempting to connect to twitch chat");
-            client = new TwitchClient();
-            client.Initialize(credentials, channelConnectName);
-            client.Connect();
+            Client = new TwitchClient();
+            Client.Initialize(_credentials, ChannelConnectName);
+            Client.Connect();
 
             var twitchApi = new TwitchApiConnection();
             twitchApi.Connect();
@@ -48,21 +44,19 @@ namespace Twitch_Bot
 
     internal class PubSubConnection
     {
-        public static TwitchPubSub pubSubClient;
+        public static TwitchPubSub PubSubClient;
         internal void Connect()
         {
-            pubSubClient = new TwitchPubSub();
-            pubSubClient.Connect();
-            pubSubClient.OnPubSubServiceConnected += PubSubConnected;
-            pubSubClient.OnListenResponse += PubSubClientOnListenResponse;
-
-
+            PubSubClient = new TwitchPubSub();
+            PubSubClient.Connect();
+            PubSubClient.OnPubSubServiceConnected += PubSubConnected;
+            PubSubClient.OnListenResponse += PubSubClientOnListenResponse;
 
             void PubSubConnected(object sender, EventArgs e)
             {
                 Console.WriteLine("Connected?");
-                pubSubClient.ListenToBitsEvents(TwitchApiConnection.GetChannelId());
-                pubSubClient.SendTopics(""); //NEEDS AUTH CODE OF STREAMER
+                PubSubClient.ListenToBitsEvents(TwitchApiConnection.GetChannelId());
+                PubSubClient.SendTopics(""); //NEEDS AUTH CODE OF STREAMER
             }
 
             void PubSubClientOnListenResponse(object sender, TwitchLib.PubSub.Events.OnListenResponseArgs e)
@@ -77,18 +71,18 @@ namespace Twitch_Bot
 
     internal class TwitchApiConnection
     {
-        public static TwitchAPI apiClient;
+        public static TwitchAPI ApiClient;
 
         internal void Connect()
         {
-            apiClient = new TwitchAPI();
-            apiClient.Settings.ClientId = "zupx1ka4amj0nbyactajcdcup08hkq";
+            ApiClient = new TwitchAPI();
+            ApiClient.Settings.ClientId = "zupx1ka4amj0nbyactajcdcup08hkq";
 
         }
 
         public static string GetChannelId()
         {
-            var userList = apiClient.Users.v5.GetUserByNameAsync(TwitchBotConnection.channelConnectName).Result.Matches;
+            var userList = ApiClient.Users.v5.GetUserByNameAsync(TwitchBotConnection.ChannelConnectName).Result.Matches;
             return userList[0].Id;
         }
     }

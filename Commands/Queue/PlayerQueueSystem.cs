@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Twitch_Bot
+namespace Bregan_TwitchBot.Commands.Queue
 {
     internal class PlayerQueueSystem
     {

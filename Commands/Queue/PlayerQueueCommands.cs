@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading;
-
-namespace Twitch_Bot
+﻿namespace Bregan_TwitchBot.Commands.Queue
 {
     internal class PlayerQueueCommands
     {
         public static void QueueSystemCommandSetup()
         {
-            TwitchBotConnection.client.OnMessageReceived += MessageRecieved;
+            TwitchBotConnection.Client.OnMessageReceived += MessageRecieved;
         }
 
         private static void MessageRecieved(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -21,17 +18,17 @@ namespace Twitch_Bot
                     PlayerQueueSystem.QueueRemove(e.ChatMessage.Username);
                     break;
                 case "!queue":
-                    TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
+                    TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
                     break;
                 case "!nextgame":
-                    TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}"); 
+                    TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}"); 
                     break;
             }
 
             if (e.ChatMessage.Message == "!remove3" && e.ChatMessage.IsModerator)
             {
                 PlayerQueueSystem.QueueRemove3();
-                TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, $"{e.ChatMessage.Username}: the current players have been removed");
+                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"{e.ChatMessage.Username}: the current players have been removed");
             }
             
             else if (e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.IsBroadcaster || e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.Username == "guinea")
@@ -40,7 +37,7 @@ namespace Twitch_Bot
             }
             else if (e.ChatMessage.Message == "!queuecommands")
             {
-                TwitchBotConnection.client.SendMessage(TwitchBotConnection.channelConnectName, "The commands are: !joinqueue, !leavequeue, !queue, !nextgame & the mod commands are !remove4 & !clearqueue (blocksssssss only)");
+                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, "The commands are: !joinqueue, !leavequeue, !queue, !nextgame & the mod commands are !remove4 & !clearqueue (blocksssssss only)");
             }
         }
     }

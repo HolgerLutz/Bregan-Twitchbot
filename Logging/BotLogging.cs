@@ -1,23 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TwitchLib.Client.Extensions;
 
-namespace Twitch_Bot
+namespace Bregan_TwitchBot.Logging
 {
     internal class BotLogging
     {
         public static void BotLoggingStart()
         {
-            TwitchBotConnection.client.OnMessageReceived += MessageRecieved;
-            TwitchBotConnection.client.OnUserJoined += UserJoinedStream;
-            TwitchBotConnection.client.OnUserLeft += UserLeftStream;
-            TwitchBotConnection.client.OnNewSubscriber += NewSub;
-            TwitchBotConnection.client.OnGiftedSubscription += NewGiftSub;
+            TwitchBotConnection.Client.OnMessageReceived += MessageRecieved;
+            TwitchBotConnection.Client.OnUserJoined += UserJoinedStream;
+            TwitchBotConnection.Client.OnUserLeft += UserLeftStream;
+            TwitchBotConnection.Client.OnNewSubscriber += NewSub;
+            TwitchBotConnection.Client.OnGiftedSubscription += NewGiftSub;
+            TwitchBotConnection.Client.OnUserBanned += UserBanned;
+            TwitchBotConnection.Client.OnUserTimedout += UserTimedOut;
             //TwitchBotConnection.client.OnLog += Client_OnLog;
+        }
+
+        private static void UserTimedOut(object sender, TwitchLib.Client.Events.OnUserTimedoutArgs e)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine($"[User Timedout] {DateTime.Now}: User banned: {e.UserTimeout.Username} Duration: {e.UserTimeout.TimeoutDuration}");
+            Console.ResetColor();
+        }
+
+        private static void UserBanned(object sender, TwitchLib.Client.Events.OnUserBannedArgs e)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine($"[User Banned] {DateTime.Now}: User banned: {e.UserBan.Username}");
+            Console.ResetColor();
         }
 
         //private static void Client_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
