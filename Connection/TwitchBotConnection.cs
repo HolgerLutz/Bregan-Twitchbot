@@ -31,12 +31,7 @@ namespace Bregan_TwitchBot.Connection
             //pubsub.Connect();
 
             //Logging
-            BotLogging.BotLoggingStart();
 
-
-            PlayerQueueSystem.QueueCreate();
-            TwitchBotGeneralMessages.TwitchMessageSetup();
-            CommandListener.CommandListenerSetup();
         }
 
     }

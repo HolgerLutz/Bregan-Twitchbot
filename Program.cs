@@ -9,14 +9,8 @@ namespace Bregan_TwitchBot
     {
         static void Main(string[] args)
         {
-            //Run in new thread as it loops
-            Thread thread = new Thread(BigBenBong.Bong);
-            thread.Start();
-
-            //Start bot
-            TwitchBotConnection bot = new TwitchBotConnection();
-            bot.Connect();
-            
+            //Start
+            StartService.ServiceStart();
             Console.ReadLine();
         }
     }
