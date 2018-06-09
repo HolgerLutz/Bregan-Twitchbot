@@ -2,6 +2,7 @@
 using Bregan_TwitchBot.Commands;
 using Bregan_TwitchBot.Commands.Queue;
 using Bregan_TwitchBot.Logging;
+using Bregan_TwitchBot.Connection;
 using TwitchLib.Api;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -12,26 +13,14 @@ namespace Bregan_TwitchBot.Connection
     internal class TwitchBotConnection
     {
         public static TwitchClient Client;
-        public const string ChannelConnectName = "blocksssssss";
+        private readonly ConnectionCredentials _credentials = new ConnectionCredentials(StartService.BotName, StartService.BotOAuth);
 
-        //TEST ACCOUNT DETAILS: readonly ConnectionCredentials credentials = new ConnectionCredentials("dadbot7373", "oauth:iwsasga1qzxvbhcs5q5jllk3v1pzhy");
-        private readonly ConnectionCredentials _credentials = new ConnectionCredentials("blocksssssssbot", "oauth:p2lf4nhslc9a96vd3bj9aa11xnka9q");
         internal void Connect()
         {
             Console.WriteLine("Attempting to connect to twitch chat");
             Client = new TwitchClient();
-            Client.Initialize(_credentials, ChannelConnectName);
+            Client.Initialize(_credentials, StartService.ChannelName);
             Client.Connect();
-
-            //Connect PubSub and API
-
-            //var pubsub = new PubSubConnection();
-            var twitchApi = new TwitchApiConnection();
-            twitchApi.Connect();
-            //pubsub.Connect();
-
-            //Logging
-
         }
 
     }
@@ -48,9 +37,9 @@ namespace Bregan_TwitchBot.Connection
 
             void PubSubConnected(object sender, EventArgs e)
             {
-                Console.WriteLine("Connected?");
+                Console.WriteLine("[PubSub] Connected");
                 PubSubClient.ListenToBitsEvents(TwitchApiConnection.GetChannelId());
-                PubSubClient.SendTopics(""); //NEEDS AUTH CODE OF STREAMER
+                PubSubClient.SendTopics(StartService.PubSubOAuth); //NEEDS AUTH CODE OF STREAMER
             }
 
             void PubSubClientOnListenResponse(object sender, TwitchLib.PubSub.Events.OnListenResponseArgs e)
@@ -70,13 +59,13 @@ namespace Bregan_TwitchBot.Connection
         internal void Connect()
         {
             ApiClient = new TwitchAPI();
-            ApiClient.Settings.ClientId = "zupx1ka4amj0nbyactajcdcup08hkq";
+            ApiClient.Settings.ClientId = StartService.TwitchAPIOAuth;
 
         }
 
         public static string GetChannelId()
         {
-            var userList = ApiClient.Users.v5.GetUserByNameAsync(TwitchBotConnection.ChannelConnectName).Result.Matches;
+            var userList = ApiClient.Users.v5.GetUserByNameAsync(StartService.ChannelName).Result.Matches;
             return userList[0].Id;
         }
     }

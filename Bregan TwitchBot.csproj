@@ -120,6 +120,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Console, Version=4.0.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Console.4.3.1\lib\net46\System.Console.dll</HintPath>
       <Private>True</Private>
@@ -254,6 +255,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Big Ben\BigBenBong.cs" />
+    <Compile Include="Connection\FirstTimeConfig.cs" />
     <Compile Include="Connection\StartService.cs" />
     <Compile Include="Logging\BotLogging.cs" />
     <Compile Include="Commands\CommandListener.cs" />
@@ -266,7 +268,7 @@
     <Compile Include="Commands\TwitchBotGeneralMessages.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

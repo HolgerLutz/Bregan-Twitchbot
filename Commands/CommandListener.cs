@@ -17,12 +17,12 @@ namespace Bregan_TwitchBot.Commands
             //8Ball
             if (e.ChatMessage.Message.StartsWith("!8ball"))
             {
-                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, EightBall.Ask8Ball());
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, EightBall.Ask8Ball());
             }
             //Dadjoke
             if (e.ChatMessage.Message.StartsWith("!dadjoke"))
             {
-                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, DadJoke.DadJoke.DadJokeGenerate().Result);
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, DadJoke.DadJoke.DadJokeGenerate().Result);
             }
 
             //Queue Commands
@@ -35,27 +35,25 @@ namespace Bregan_TwitchBot.Commands
                     PlayerQueueSystem.QueueRemove(e.ChatMessage.Username);
                     break;
                 case "!queue":
-                    TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
                     break;
                 case "!nextgame":
-                    TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
                     break;
-            }
-            //Remove 3 users (last game)
-            if (e.ChatMessage.Message == "!remove3" && e.ChatMessage.IsModerator)
-            {
-                PlayerQueueSystem.QueueRemove3();
-                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, $"{e.ChatMessage.Username}: the current players have been removed");
-            }
-            //Remove all users
-            else if (e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.IsBroadcaster || e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.Username == "guinea")
-            {
-                PlayerQueueSystem.QueueClear();
-            }
-            //See the commands for the queue system
-            else if (e.ChatMessage.Message == "!queuecommands")
-            {
-                TwitchBotConnection.Client.SendMessage(TwitchBotConnection.ChannelConnectName, "The commands are: !joinqueue, !leavequeue, !queue, !nextgame & the mod commands are !remove4 & !clearqueue (blocksssssss only)");
+                case "!queuecommands":
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "The commands are: !joinqueue, !leavequeue, !queue, !nextgame & the mod commands are !removegame & !clearqueue");
+                    break;
+
+                //Mod Commands
+                case "!removegame" when e.ChatMessage.IsModerator:
+                    PlayerQueueSystem.QueueRemove3();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.ChatMessage.Username}: the current players have been removed");
+                    break;
+                case "!clearqueue" when e.ChatMessage.IsBroadcaster:
+                case "!clearqueue" when e.ChatMessage.IsModerator:
+                    PlayerQueueSystem.QueueClear();
+                    break;
+
             }
         }
     }
