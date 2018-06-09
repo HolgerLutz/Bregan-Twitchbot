@@ -18,22 +18,25 @@ namespace Bregan_TwitchBot.Connection
 
         public static void ServiceStart()
         {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var botConfigured = config.AppSettings.Settings["BotConfigured"].Value;
+            var configCheck = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var botConfigured = configCheck.AppSettings.Settings["BotConfigured"].Value;
 
             if (botConfigured == "false") //First time has to be set up
             {
                 FirstTimeConfig.FirstTimeStartup();
             }
+            
+            ConfigurationManager.RefreshSection("appSettings");
+            var configReload = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
             //Load config to variables
-            ChannelName = config.AppSettings.Settings["ChannelName"].Value;
-            BotName = config.AppSettings.Settings["BotName"].Value;
-            BotOAuth = config.AppSettings.Settings["ChannelOAuth"].Value;
-            PubSubOAuth = config.AppSettings.Settings["PubSubOAuth"].Value;
-            TwitchAPIOAuth = config.AppSettings.Settings["TwitchApiOAuth"].Value;
+            ChannelName = configReload.AppSettings.Settings["ChannelName"].Value;
+            BotName = configReload.AppSettings.Settings["BotName"].Value;
+            BotOAuth = configReload.AppSettings.Settings["ChannelOAuth"].Value;
+            PubSubOAuth = configReload.AppSettings.Settings["PubSubOAuth"].Value;
+            TwitchAPIOAuth = configReload.AppSettings.Settings["TwitchAPIOAuth"].Value;
 
-            if (PubSubOAuth != "NotEnabled")
+            if (PubSubOAuth != "NotSet")
             {
                 var pubsub = new PubSubConnection();
                 pubsub.Connect();

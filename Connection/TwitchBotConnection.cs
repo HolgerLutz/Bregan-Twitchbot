@@ -60,7 +60,6 @@ namespace Bregan_TwitchBot.Connection
         {
             ApiClient = new TwitchAPI();
             ApiClient.Settings.ClientId = StartService.TwitchAPIOAuth;
-
         }
 
         public static string GetChannelId()

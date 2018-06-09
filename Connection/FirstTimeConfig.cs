@@ -69,7 +69,6 @@ namespace Bregan_TwitchBot.Connection
 
                 if (pubSubOAuth == "skip")
                 {
-                    config.AppSettings.Settings["PubSubOAuth"].Value = "NotEnabled";
                     Console.Clear();
                     break;
                 }
