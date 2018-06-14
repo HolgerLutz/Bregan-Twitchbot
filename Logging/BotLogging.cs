@@ -14,7 +14,7 @@ namespace Bregan_TwitchBot.Logging
             TwitchBotConnection.Client.OnGiftedSubscription += NewGiftSub;
             TwitchBotConnection.Client.OnUserBanned += UserBanned;
             TwitchBotConnection.Client.OnUserTimedout += UserTimedOut;
-            TwitchBotConnection.Client.OnLog += Client_OnLog;
+            //TwitchBotConnection.Client.OnLog += Client_OnLog;
         }
 
         private static void UserTimedOut(object sender, TwitchLib.Client.Events.OnUserTimedoutArgs e)
@@ -31,10 +31,10 @@ namespace Bregan_TwitchBot.Logging
             Console.ResetColor();
         }
 
-        private static void Client_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
-        {
-            Console.WriteLine(e.Data);
-        }
+       // private static void Client_OnLog(object sender, TwitchLib.Client.Events.OnLogArgs e)
+       // {
+       //     Console.WriteLine(e.Data);
+       // }
 
 
         private static void NewSub(object sender, TwitchLib.Client.Events.OnNewSubscriberArgs e)

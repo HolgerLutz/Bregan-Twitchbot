@@ -1,7 +1,11 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
 using Bregan_TwitchBot.Commands;
 using Bregan_TwitchBot.Commands.Big_Ben;
+using Bregan_TwitchBot.Commands.Message_Limiter;
 using Bregan_TwitchBot.Commands.Queue;
 using Bregan_TwitchBot.Logging;
 
@@ -42,9 +46,11 @@ namespace Bregan_TwitchBot.Connection
                 pubsub.Connect();
             }
 
-            //Run in new thread as it loops
+            //Threads for timers
             Thread t1 = new Thread(BigBenBong.Bong);
+            Thread t2 = new Thread(CommandLimiter.ResetMessageLimit);
             t1.Start();
+            t2.Start();
 
             //Start the bot
             TwitchBotConnection bot = new TwitchBotConnection();
@@ -59,6 +65,7 @@ namespace Bregan_TwitchBot.Connection
             PlayerQueueSystem.QueueCreate();
             TwitchBotGeneralMessages.TwitchMessageSetup();
             CommandListener.CommandListenerSetup();
+            Task.Delay(1000).ContinueWith(t => CommandLimiter.SetMessageLimit());
         }
     }
 }

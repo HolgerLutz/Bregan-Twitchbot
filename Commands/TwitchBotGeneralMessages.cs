@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Bregan_TwitchBot.Commands.Message_Limiter;
 using Bregan_TwitchBot.Connection;
 
 namespace Bregan_TwitchBot.Commands
@@ -12,7 +15,7 @@ namespace Bregan_TwitchBot.Commands
             TwitchBotConnection.Client.OnReSubscriber += Resub;
             TwitchBotConnection.Client.OnGiftedSubscription += GiftSub;
             TwitchBotConnection.Client.OnBeingHosted += Client_OnBeingHosted;
-            //PubSubConnection.pubSubClient.OnBitsReceived += BitsDonated; Needs channel auth owner
+            //PubSubConnection.pubSubClient.OnBitsReceived += BitsDonated;
         }
 
         private static void Client_OnBeingHosted(object sender, TwitchLib.Client.Events.OnBeingHostedArgs e)
