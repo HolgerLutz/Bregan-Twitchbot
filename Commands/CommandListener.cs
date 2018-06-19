@@ -15,9 +15,10 @@ namespace Bregan_TwitchBot.Commands
 
         private static void Commands(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
         {
+            //Message limit checker
             if (CommandLimiter.MessagesSent >= CommandLimiter.MessageLimit)
             {
-                Console.WriteLine("[Message Limiter] LIMIT HIT");
+                Console.WriteLine("[Message Limiter] Message Limit Hit");
                 return;
             }
             //8Ball
@@ -33,46 +34,59 @@ namespace Bregan_TwitchBot.Commands
                 CommandLimiter.AddMessageCount();
             }
 
-            if (e.ChatMessage.Message.StartsWith("!test"))
+            //Queue Commands
+            if (e.ChatMessage.Message == "!joinqueue" && PlayerQueueSystem.QueueUserCheck(e.ChatMessage.Username) == false)
             {
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "/mods");
+                PlayerQueueSystem.QueueAdd(e.ChatMessage.Username);
                 CommandLimiter.AddMessageCount();
             }
-            //Queue Commands
-            switch (e.ChatMessage.Message)
+            else if (e.ChatMessage.Message == "!leavequeue")
             {
-                case "!joinqueue" when PlayerQueueSystem.QueueUserCheck(e.ChatMessage.Username) == false:
-                    PlayerQueueSystem.QueueAdd(e.ChatMessage.Username);
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "!leavequeue":
-                    PlayerQueueSystem.QueueRemove(e.ChatMessage.Username);
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "!queue":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "!nextgame":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "!queuecommands":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "The commands are: !joinqueue, !leavequeue, !queue, !nextgame & the mod commands are !removegame & !clearqueue");
-                    CommandLimiter.AddMessageCount();
-                    break;
-
-                //Mod Commands
-                case "!removegame" when e.ChatMessage.IsModerator:
-                    PlayerQueueSystem.QueueRemove3();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.ChatMessage.Username}: the current players have been removed");
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "!clearqueue" when e.ChatMessage.IsBroadcaster:
-                case "!clearqueue" when e.ChatMessage.IsModerator:
-                    PlayerQueueSystem.QueueClear();
-                    break;
-            }           
+                PlayerQueueSystem.QueueRemove(e.ChatMessage.Username);
+                CommandLimiter.AddMessageCount();
+            }
+            else if (e.ChatMessage.Message == "!queue")
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
+                CommandLimiter.AddMessageCount();
+            }
+            else if (e.ChatMessage.Message == "!nextgame")
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
+                CommandLimiter.AddMessageCount();
+            }
+            //Mod Commands
+            else if ((e.ChatMessage.Message == "!removegame" && e.ChatMessage.IsModerator) ||
+                     (e.ChatMessage.Message == "!removegame" && e.ChatMessage.IsBroadcaster))
+            {
+                PlayerQueueSystem.QueueRemove3();
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.ChatMessage.Username}: the current players have been removed");
+                CommandLimiter.AddMessageCount();
+            }
+            else if ((e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.IsBroadcaster) ||
+                     (e.ChatMessage.Message == "!clearqueue" && e.ChatMessage.IsModerator))
+            {
+                PlayerQueueSystem.QueueClear();
+            }
+            else if ((e.ChatMessage.Message == "!setremoveamount" && e.ChatMessage.IsModerator) ||
+                     (e.ChatMessage.Message == "!setremoveamount" && e.ChatMessage.IsBroadcaster))
+            {
+                PlayerQueueSystem.SetQueueRemoveAmount(e.ChatMessage.Message);
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName,$"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
+                CommandLimiter.AddMessageCount();
+            }
+            else if (e.ChatMessage.Message.StartsWith("!setremoveamount") && e.ChatMessage.IsModerator ||
+                e.ChatMessage.Message.StartsWith("!setremoveamount") && e.ChatMessage.IsBroadcaster)
+            {
+                PlayerQueueSystem.SetQueueRemoveAmount(e.ChatMessage.Message);
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
+                CommandLimiter.AddMessageCount();
+            }
+            else if (e.ChatMessage.Message.StartsWith("!queueposition"))
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, PlayerQueueSystem.GetQueuePosition(e.ChatMessage.Username));
+                CommandLimiter.AddMessageCount();
+            }
         }
     }
 }

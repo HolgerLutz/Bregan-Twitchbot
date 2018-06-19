@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Bregan_TwitchBot.Commands.Queue
 {
     internal class PlayerQueueSystem
     {
+        public static int QueueRemoveAmount;
         private static List<string> _playerQueue;
         //TODO: Move Console logging to BotLogging.cs? 
 
@@ -12,6 +14,7 @@ namespace Bregan_TwitchBot.Commands.Queue
         public static void QueueCreate()
         {
             _playerQueue = new List<string>();
+            QueueRemoveAmount = 3;
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("[Player Queue] Player queue sucessfully created");
             Console.ResetColor();
@@ -40,7 +43,7 @@ namespace Bregan_TwitchBot.Commands.Queue
         //Remove the first 3 people of the queue TODO: have an option in config to change how many people?
         public static void QueueRemove3()
         {
-            if (_playerQueue.Count <= 3) //If theres only 3 or less then the whole queue can be wiped clean
+            if (_playerQueue.Count <= QueueRemoveAmount) //If theres only 3 or less then the whole queue can be wiped clean
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has been cleared");
@@ -49,13 +52,13 @@ namespace Bregan_TwitchBot.Commands.Queue
                 return;
             }
 
-            for (int i = 2; i >= 0; i--) //If there are more than 3 then loop through the first 3 people
+            for (int i = QueueRemoveAmount; i >= 0; i--) //If there are more than 3 then loop through the first 3 people
             {
                 _playerQueue.RemoveAt(i);
             }
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has removed 4 people");
+            Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has removed {QueueRemoveAmount} people");
             Console.ResetColor();
         }
 
@@ -63,7 +66,7 @@ namespace Bregan_TwitchBot.Commands.Queue
         {
             _playerQueue.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue has been cleared completly");
+            Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue has been cleared completely");
             Console.ResetColor();
         }
 
@@ -71,7 +74,7 @@ namespace Bregan_TwitchBot.Commands.Queue
         {
 
             //If the queue contains less than 4 players return the current amount
-            if (_playerQueue.Count <= 3)
+            if (_playerQueue.Count <= QueueRemoveAmount)
             {
                 return String.Join(", ", _playerQueue);
             }
@@ -80,11 +83,10 @@ namespace Bregan_TwitchBot.Commands.Queue
 
             var nextPlayers = new List<string>();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < QueueRemoveAmount; i++)
             {
                 nextPlayers.Add(_playerQueue[i]);
             }
-
             return String.Join(", ", nextPlayers);
         }
 
@@ -93,7 +95,23 @@ namespace Bregan_TwitchBot.Commands.Queue
             return String.Join(", ", _playerQueue); //Just show everyone in the queue and splitting them with a comma
         }
 
-        //TODO: add their queue position? 
+        public static void SetQueueRemoveAmount(string message)
+        {
+            var removeCommand = message.Replace("!setremoveamount", "");
+            QueueRemoveAmount = int.Parse(removeCommand);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue remove amount has been set to {QueueRemoveAmount}");
+            Console.ResetColor();
+        }
+
+        public static string GetQueuePosition(string username)
+        {
+            if (_playerQueue.Contains(username))
+            {
+                return $"Hey @{username} => Your queue position is {_playerQueue.IndexOf(username)}";
+            }
+            return "You aren't in the queue yet! Do !joinqueue";
+        }
 
     }
 }
