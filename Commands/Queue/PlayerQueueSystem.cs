@@ -40,7 +40,7 @@ namespace Bregan_TwitchBot.Commands.Queue
             Console.ResetColor();
             _playerQueue.Remove(user);
         }
-        //Remove the first 3 people of the queue TODO: have an option in config to change how many people?
+        //Remove the first 3 people of the queue
         public static void QueueRemove3()
         {
             if (_playerQueue.Count <= QueueRemoveAmount) //If theres only 3 or less then the whole queue can be wiped clean

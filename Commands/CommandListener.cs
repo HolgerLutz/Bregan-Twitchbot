@@ -33,7 +33,20 @@ namespace Bregan_TwitchBot.Commands
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, DadJoke.DadJoke.DadJokeGenerate().Result);
                 CommandLimiter.AddMessageCount();
             }
-
+            //Commands
+            if (e.ChatMessage.Message.StartsWith("!commands"))
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "You can find the commands at https://github.com/Bregann/Bregan-Twitchbot#bregan-twitchbot");
+                CommandLimiter.AddMessageCount();
+            }
+            //Shoutout - Mod only
+            if (e.ChatMessage.Message.StartsWith("!shoutout") && e.ChatMessage.IsModerator ||
+                e.ChatMessage.Message.StartsWith("!shoutout") && e.ChatMessage.IsBroadcaster)
+            {
+                var channelShoutout = e.ChatMessage.Message.Replace("!shoutout @", "");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Hey go check out {channelShoutout} at twitch.tv/{channelShoutout} for some great content!");
+                CommandLimiter.AddMessageCount();
+            }
             //Queue Commands
             if (e.ChatMessage.Message == "!joinqueue" && PlayerQueueSystem.QueueUserCheck(e.ChatMessage.Username) == false)
             {
@@ -53,6 +66,11 @@ namespace Bregan_TwitchBot.Commands
             else if (e.ChatMessage.Message == "!nextgame")
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
+                CommandLimiter.AddMessageCount();
+            }
+            else if (e.ChatMessage.Message.StartsWith("!queueposition"))
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, PlayerQueueSystem.GetQueuePosition(e.ChatMessage.Username));
                 CommandLimiter.AddMessageCount();
             }
             //Mod Commands
@@ -80,11 +98,6 @@ namespace Bregan_TwitchBot.Commands
             {
                 PlayerQueueSystem.SetQueueRemoveAmount(e.ChatMessage.Message);
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
-                CommandLimiter.AddMessageCount();
-            }
-            else if (e.ChatMessage.Message.StartsWith("!queueposition"))
-            {
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, PlayerQueueSystem.GetQueuePosition(e.ChatMessage.Username));
                 CommandLimiter.AddMessageCount();
             }
         }

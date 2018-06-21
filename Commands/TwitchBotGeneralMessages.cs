@@ -15,7 +15,11 @@ namespace Bregan_TwitchBot.Commands
             TwitchBotConnection.Client.OnNewSubscriber += NewSub;
             TwitchBotConnection.Client.OnReSubscriber += Resub;
             TwitchBotConnection.Client.OnGiftedSubscription += GiftSub;
-            PubSubConnection.PubSubClient.OnBitsReceived += BitsDonated;
+            if (StartService.PubSubOAuth != "NotSet")
+            {
+                PubSubConnection.PubSubClient.OnBitsReceived += BitsDonated;
+            }
+            
         }
 
         //Gifted subs
@@ -43,7 +47,8 @@ namespace Bregan_TwitchBot.Commands
       
         private static void BitsDonated(object sender, OnBitsReceivedArgs e)
         {
-            Console.WriteLine($"Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");/            TwitchBotConnection.client.SendMessage(StartService.ChannelName, $"{e.Username} has donated + {e.BitsUsed} with a grand total of {e.TotalBitsUsed} donated PogChamp");
+            Console.WriteLine($"Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Username} has donated + {e.BitsUsed} with a grand total of {e.TotalBitsUsed} donated PogChamp");
         }
 
     }
