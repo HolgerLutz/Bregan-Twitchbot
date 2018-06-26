@@ -11,6 +11,8 @@ C# Twitch bot using TwitchLib
 ## General Commands
 * !8ball <message>
 * !dadjoke
+* !commands
+* !shoutout (mod only)
   
 ## Queue Commands
 ### User Commands
