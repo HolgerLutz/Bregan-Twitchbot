@@ -170,6 +170,7 @@
   <ItemGroup>
     <Compile Include="Commands\Big Ben\BigBenBong.cs" />
     <Compile Include="Commands\Message Limiter\CommandLimiter.cs" />
+    <Compile Include="Commands\Random User\RandomUser.cs" />
     <Compile Include="Connection\FirstTimeConfig.cs" />
     <Compile Include="Connection\StartService.cs" />
     <Compile Include="Logging\BotLogging.cs" />
