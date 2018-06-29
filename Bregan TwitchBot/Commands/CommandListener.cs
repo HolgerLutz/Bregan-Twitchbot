@@ -5,6 +5,7 @@ using Bregan_TwitchBot.Commands.Random_User;
 using Bregan_TwitchBot.Commands._8Ball;
 using Bregan_TwitchBot.Connection;
 
+
 namespace Bregan_TwitchBot.Commands
 {
     internal class CommandListener
