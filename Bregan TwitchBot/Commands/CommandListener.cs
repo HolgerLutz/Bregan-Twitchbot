@@ -92,12 +92,27 @@ namespace Bregan_TwitchBot.Commands
                 case "setremoveamount" when e.Command.ChatMessage.IsModerator:
                 case "setremoveamount" when e.Command.ChatMessage.IsBroadcaster:
                     PlayerQueueSystem.SetQueueRemoveAmount(e.Command.ChatMessage.Message);
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName,
-                        $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
                     CommandLimiter.AddMessageCount();
                     break;
             }
 
+            //Giveaway
+
+            switch (e.Command.CommandText)
+            {
+                case "startgiveaway" when e.Command.ChatMessage.IsModerator:
+                case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaway.Giveaway.StartGiveaway();
+                    return;
+                case "joingiveaway":
+                    Giveaway.Giveaway.AddContestant(e.Command.ChatMessage.Username);
+                    return;
+                case "amountentered" when e.Command.ChatMessage.IsModerator:
+                case "amountentered" when e.Command.ChatMessage.IsModerator:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaway.Giveaway.AmountOfContestantsEntered()}");
+                    break;
+            }
         }
     }
 }
