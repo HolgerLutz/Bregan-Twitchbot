@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bregan_TwitchBot.Commands;
 using Bregan_TwitchBot.Commands.Big_Ben;
+using Bregan_TwitchBot.Commands.Giveaway;
 using Bregan_TwitchBot.Commands.Message_Limiter;
 using Bregan_TwitchBot.Commands.Queue;
 using Bregan_TwitchBot.Commands.Random_User;
@@ -61,13 +62,16 @@ namespace Bregan_TwitchBot.Connection
             //Start everything
             BotLogging.BotLoggingStart(); //Logging
             BigBenBong.Bong(); //Big Ben
-            //RandomUser.GenerateRandomUser(); //Random User
+            RandomUser.StartGetChattersTimer(); //Get the chatters for random user commands
             PlayerQueueSystem.QueueCreate(); //Queue
             TwitchBotGeneralMessages.TwitchMessageSetup(); //Sub/bit messages
             CommandListener.CommandListenerSetup(); //Commands
             CommandLimiter.SetMessageLimit(); //Set Message Limit
             CommandLimiter.ResetMessageLimit(); //Start message resetter
-            RandomUser.StartGetChattersTimer();
+
+            //Giveaway
+            Giveaways.IsGiveawayOn = false;
+            Giveaways.TimerAmount = 40000;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Bregan_TwitchBot.Commands.Queue
         public static int QueueRemoveAmount;
         private static List<string> _playerQueue;
         //TODO: Move Console logging to BotLogging.cs? 
-
+        //TODO: Throw exceptions
         //Create queue as soon as the bot starts
         public static void QueueCreate()
         {
@@ -98,10 +98,28 @@ namespace Bregan_TwitchBot.Commands.Queue
         public static void SetQueueRemoveAmount(string message)
         {
             var removeCommand = message.Replace("!setremoveamount", "");
-            QueueRemoveAmount = int.Parse(removeCommand);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue remove amount has been set to {QueueRemoveAmount}");
-            Console.ResetColor();
+
+            try
+            {
+                QueueRemoveAmount = int.Parse(removeCommand);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue remove amount has been set to {QueueRemoveAmount}");
+                Console.ResetColor();
+            }
+            catch (FormatException)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[Player Queue] {DateTime.Now}: A user attempted to break the bot! (Format Exeception)");
+                Console.ResetColor();
+            }
+            catch (OverflowException)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[Player Queue] {DateTime.Now}: A user attempted to break the bot! (Overflow Exeception)");
+                Console.ResetColor();
+            }
+
+
         }
 
         public static string GetQueuePosition(string username)

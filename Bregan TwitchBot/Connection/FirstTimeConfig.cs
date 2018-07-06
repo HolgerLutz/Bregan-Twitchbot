@@ -9,7 +9,6 @@ namespace Bregan_TwitchBot.Connection
         public static void FirstTimeStartup()
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
             Console.WriteLine("Welcome to the Bregan TwitchBot! As this is the first time you will have to do some configuration");
 
             //Channel name

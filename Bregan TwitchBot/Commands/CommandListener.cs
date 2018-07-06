@@ -4,6 +4,8 @@ using Bregan_TwitchBot.Commands.Queue;
 using Bregan_TwitchBot.Commands.Random_User;
 using Bregan_TwitchBot.Commands._8Ball;
 using Bregan_TwitchBot.Connection;
+using Bregan_TwitchBot.Commands.Giveaway;
+
 
 namespace Bregan_TwitchBot.Commands
 {
@@ -91,12 +93,37 @@ namespace Bregan_TwitchBot.Commands
                 case "setremoveamount" when e.Command.ChatMessage.IsModerator:
                 case "setremoveamount" when e.Command.ChatMessage.IsBroadcaster:
                     PlayerQueueSystem.SetQueueRemoveAmount(e.Command.ChatMessage.Message);
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName,
-                        $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
                     CommandLimiter.AddMessageCount();
                     break;
             }
 
+            //Giveaway
+
+            switch (e.Command.CommandText)
+            {
+                case "startgiveaway" when e.Command.ChatMessage.IsModerator:
+                case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.StartGiveaway();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "A new giveaway has started! Do !joingiveaway to join!");
+                    return;
+                case "joingiveaway":
+                    Giveaways.AddContestant(e.Command.ChatMessage.Username);
+                    return;
+                case "amountentered" when e.Command.ChatMessage.IsModerator:
+                case "amountentered" when e.Command.ChatMessage.IsBroadcaster:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaways.AmountOfContestantsEntered()}");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case "setgiveawaytime" when e.Command.ChatMessage.IsModerator:
+                case "setgiveawaytime" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.SetTimerAmount(e.Command.ChatMessage.Message, e.Command.ChatMessage.Username);
+                    break;
+                case "reroll" when e.Command.ChatMessage.IsModerator:
+                case "reroll" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.ReRoll();
+                    break;
+            }
         }
     }
 }
