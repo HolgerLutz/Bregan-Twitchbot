@@ -70,7 +70,8 @@ namespace Bregan_TwitchBot.Connection
             CommandLimiter.ResetMessageLimit(); //Start message resetter
 
             //Giveaway
-            Giveaway.IsGiveawayOn = false;
+            Giveaways.IsGiveawayOn = false;
+            Giveaways.TimerAmount = 40000;
         }
     }
 }

@@ -45,7 +45,6 @@ namespace Bregan_TwitchBot.Commands.Message_Limiter
         private static void ResetMessagesSent(object sender, ElapsedEventArgs e)
         {
             MessagesSent = 0;
-            Console.WriteLine($"[Rate Limiter] {DateTime.Now}: Messages sent set to 0");
         }
 
         public static void AddMessageCount()

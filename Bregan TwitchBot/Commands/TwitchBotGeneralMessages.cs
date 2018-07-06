@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bregan_TwitchBot.Commands.Message_Limiter;
 using Bregan_TwitchBot.Connection;
+using TwitchLib.Client.Enums;
 using TwitchLib.PubSub.Events;
 
 namespace Bregan_TwitchBot.Commands
@@ -30,12 +31,52 @@ namespace Bregan_TwitchBot.Commands
         //Resubscriptions
         private static void Resub(object sender, TwitchLib.Client.Events.OnReSubscriberArgs e)
         {
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with the message {e.ReSubscriber.ResubMessage} <3 <3 <3 <3");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for  months with the message {e.ReSubscriber.ResubMessage} <3 <3 <3 <3");
+
+            switch (e.ReSubscriber.SubscriptionPlan)
+            {
+                case SubscriptionPlan.Tier1:
+                case SubscriptionPlan.NotSet:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months! PogChamp <3");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Tier2:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a tier 2 subscription! PogChamp PogChamp <3 <3");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Tier3:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a tier 3 sub! PogChamp PogChamp PogChamp <3 <3 <3");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Prime:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a Twitch Prime sub! PogChamp <3");
+                    CommandLimiter.AddMessageCount();
+                    break;
+            }
         }
         //New subscription
         private static void NewSub(object sender, TwitchLib.Client.Events.OnNewSubscriberArgs e)
         {
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad!");
+            switch (e.Subscriber.SubscriptionPlan)
+            {
+                case SubscriptionPlan.Tier1:
+                case SubscriptionPlan.NotSet:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad! PogChamp");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Tier2:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a tier 2 sub! PogChamp PogChamp");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Tier3:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a tier 3 sub! PogChamp PogChamp PogChamp <3 <3 <3");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case SubscriptionPlan.Prime:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a Twitch Prime sub! PogChamp");
+                    CommandLimiter.AddMessageCount();
+                    break;
+            }
         }
         //Connection
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
