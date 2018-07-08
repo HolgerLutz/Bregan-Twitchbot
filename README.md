@@ -15,7 +15,7 @@ C# Twitch bot using TwitchLib
 * !shoutout (mod only)
 * !pitchfork
 
-##Giveaway Commands
+## Giveaway Commands
 ### User Commands
 * !joingiveaway
 ### Mod Commands
