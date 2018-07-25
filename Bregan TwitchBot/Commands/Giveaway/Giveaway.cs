@@ -7,7 +7,7 @@ using Bregan_TwitchBot.Commands.Message_Limiter;
 
 namespace Bregan_TwitchBot.Commands.Giveaway
 {
-    internal class Giveaways //TODO: Re-roll option, see time left and see the timer amount that is set
+    internal class Giveaways //TODO: see time left and see the timer amount that is set, set sub only, set follow only
     {
         private static List<string> _contestents;
         public static int TimerAmount;
@@ -94,7 +94,13 @@ namespace Bregan_TwitchBot.Commands.Giveaway
         private static void WinnerWinner()
         {
             var random = new Random();
-            Console.WriteLine(_contestents.Capacity);
+
+            if (_contestents.Count == 0)
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "No one entered the giveaway :(");
+                IsGiveawayOn = false;
+                return;
+            }
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Congratulations @{_contestents[random.Next(0, _contestents.Count)]}! You have won the giveaway PogChamp");
             CommandLimiter.AddMessageCount();
             IsGiveawayOn = false;

@@ -21,8 +21,15 @@ namespace Bregan_TwitchBot.Connection
             Client = new TwitchClient();
             Client.Initialize(_credentials, StartService.ChannelName);
             Client.Connect();
+
+            Client.OnConnected += OnConnectedToChannel;
         }
 
+        private static void OnConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
+        {
+            Client.SendMessage(StartService.ChannelName,"Successfully connected!");
+            Console.WriteLine($"[Bot Connection] {DateTime.Now}: Bot successfully connected");
+        }
     }
 
     internal class PubSubConnection

@@ -23,12 +23,11 @@ namespace Bregan_TwitchBot.Commands.Message_Limiter
             var userList = TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync("blocksssssss").Result;
 
 
-            foreach (var test in userList)
+            foreach (var username in userList)
             {
-                if (test.Username == StartService.BotName && test.UserType == UserType.Moderator)
+                if (username.Username == StartService.BotName && username.UserType == UserType.Moderator)
                 {
                     MessageLimit = 95;
-                    Console.WriteLine(MessageLimit);
                     return;
                 }
                 MessageLimit = 15;

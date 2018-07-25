@@ -24,7 +24,7 @@ namespace Bregan_TwitchBot.Commands.Random_User
                 _userList.Add(user.Username);
             }
 
-            var timer = new Timer(60000);
+            var timer = new Timer(120000);
             timer.Start();
             timer.Elapsed += Timer_Elapsed;
         }

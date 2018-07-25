@@ -31,8 +31,6 @@ namespace Bregan_TwitchBot.Commands
         //Resubscriptions
         private static void Resub(object sender, TwitchLib.Client.Events.OnReSubscriberArgs e)
         {
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for  months with the message {e.ReSubscriber.ResubMessage} <3 <3 <3 <3");
-
             switch (e.ReSubscriber.SubscriptionPlan)
             {
                 case SubscriptionPlan.Tier1:

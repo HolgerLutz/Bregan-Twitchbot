@@ -5,7 +5,7 @@ using Bregan_TwitchBot.Commands.Random_User;
 using Bregan_TwitchBot.Commands._8Ball;
 using Bregan_TwitchBot.Connection;
 using Bregan_TwitchBot.Commands.Giveaway;
-
+using Bregan_TwitchBot.Commands.Word_Blacklister;
 
 namespace Bregan_TwitchBot.Commands
 {
@@ -33,13 +33,11 @@ namespace Bregan_TwitchBot.Commands
                     CommandLimiter.AddMessageCount();
                     break;
                 case "dadjoke":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName,
-                        DadJoke.DadJoke.DadJokeGenerate().Result);
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, DadJoke.DadJoke.DadJokeGenerate().Result);
                     CommandLimiter.AddMessageCount();
                     break;
                 case "commands":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName,
-                        "You can find the commands at https://github.com/Bregann/Bregan-Twitchbot#bregan-twitchbot");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "You can find the commands at https://github.com/Bregann/Bregan-Twitchbot#bregan-twitchbot");
                     CommandLimiter.AddMessageCount();
                     break;
                 case "pitchfork":
@@ -56,7 +54,7 @@ namespace Bregan_TwitchBot.Commands
             }
 
             //Queue commands
-            switch (e.Command.CommandText)
+            switch (e.Command.CommandText.ToLower())
             {
                 case "joinqueue" when PlayerQueueSystem.QueueUserCheck(e.Command.ChatMessage.Username) == false:
                     PlayerQueueSystem.QueueAdd(e.Command.ChatMessage.Username);
@@ -82,8 +80,7 @@ namespace Bregan_TwitchBot.Commands
                 case "removegame" when e.Command.ChatMessage.IsModerator:
                 case "removegame" when e.Command.ChatMessage.IsBroadcaster:
                     PlayerQueueSystem.QueueRemove3();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName,
-                        $"{e.Command.ChatMessage.Username}: the current players have been removed");
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username}: the current players have been removed");
                     CommandLimiter.AddMessageCount();
                     break;
                 case "clearqueue" when e.Command.ChatMessage.IsModerator:
@@ -122,6 +119,18 @@ namespace Bregan_TwitchBot.Commands
                 case "reroll" when e.Command.ChatMessage.IsModerator:
                 case "reroll" when e.Command.ChatMessage.IsBroadcaster:
                     Giveaways.ReRoll();
+                    break;
+            }
+
+            //Bad word filter
+
+            switch (e.Command.CommandText)
+            {
+                case "addbadword" when e.Command.ChatMessage.IsModerator:
+                    WordBlackList.AddBadWord(e.Command.ChatMessage.Message);
+                    break;
+                case "removebadword" when e.Command.ChatMessage.IsModerator:
+                    WordBlackList.RemoveBadWord(e.Command.ChatMessage.Message);
                     break;
             }
         }
