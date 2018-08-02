@@ -12,8 +12,8 @@ using Bregan_TwitchBot.Commands.Message_Limiter;
 using Bregan_TwitchBot.Commands.Queue;
 using Bregan_TwitchBot.Commands.Random_User;
 using Bregan_TwitchBot.Commands.Word_Blacklister;
+using Bregan_TwitchBot.Database;
 using Bregan_TwitchBot.Logging;
-
 
 namespace Bregan_TwitchBot.Connection
 {
@@ -57,17 +57,21 @@ namespace Bregan_TwitchBot.Connection
             //Connect to the API
             TwitchApiConnection twitchApi = new TwitchApiConnection();
             twitchApi.Connect();
-
+            
             var getUserID = TwitchApiConnection.ApiClient.Users.v5.GetUserByNameAsync(ChannelName).Result.Matches;
             TwitchChannelID = getUserID[0].Id;
 
+            DatabaseSetup.StartupDatabase();
+            
             //Start Threads
             Thread t1 = new Thread(CommandListener.CommandListenerSetup); //Commands
             Thread t2 = new Thread(BotLogging.BotLoggingStart); //Logging
             Thread t3 = new Thread(WordBlackList.StartBlacklist); //Start word blacklist
+            Thread t4 = new Thread(TimeTracker.UserTimeTracker); //Time tracker that uploads to local database
             t1.Start();
             t2.Start();
             t3.Start();
+            t4.Start();
 
             //Start everything
             BigBenBong.Bong(); //Big Ben

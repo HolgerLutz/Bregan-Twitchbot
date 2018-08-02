@@ -79,7 +79,7 @@ namespace Bregan_TwitchBot.Commands
         //Connection
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Successfully connected");
+            //TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Successfully connected");
             Console.WriteLine("[Twitch Connection] Bot Sucessfully connected");
         }
 

@@ -6,6 +6,7 @@ using Bregan_TwitchBot.Commands._8Ball;
 using Bregan_TwitchBot.Connection;
 using Bregan_TwitchBot.Commands.Giveaway;
 using Bregan_TwitchBot.Commands.Word_Blacklister;
+using Bregan_TwitchBot.Database;
 
 namespace Bregan_TwitchBot.Commands
 {
@@ -26,7 +27,7 @@ namespace Bregan_TwitchBot.Commands
             }
 
             //General pre-programmed commands
-            switch (e.Command.CommandText)
+            switch (e.Command.CommandText.ToLower())
             {
                 case "8ball":
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, EightBall.Ask8Ball());
@@ -51,11 +52,31 @@ namespace Bregan_TwitchBot.Commands
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Hey go check out {userToShoutout.Replace("!shoutout","")} at twitch.tv/{userToShoutout.Replace("!shoutout", "").Trim()} for some great content!");
                     CommandLimiter.AddMessageCount();
                     break;
-            }
+                //Giveaway commands
 
-            //Queue commands
-            switch (e.Command.CommandText.ToLower())
-            {
+                case "startgiveaway" when e.Command.ChatMessage.IsModerator:
+                case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.StartGiveaway();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "A new giveaway has started! Do !joingiveaway to join!");
+                    return;
+                case "joingiveaway":
+                    Giveaways.AddContestant(e.Command.ChatMessage.Username);
+                    return;
+                case "amountentered" when e.Command.ChatMessage.IsModerator:
+                case "amountentered" when e.Command.ChatMessage.IsBroadcaster:
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaways.AmountOfContestantsEntered()}");
+                    CommandLimiter.AddMessageCount();
+                    break;
+                case "setgiveawaytime" when e.Command.ChatMessage.IsModerator:
+                case "setgiveawaytime" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.SetTimerAmount(e.Command.ChatMessage.Message, e.Command.ChatMessage.Username);
+                    break;
+                case "reroll" when e.Command.ChatMessage.IsModerator:
+                case "reroll" when e.Command.ChatMessage.IsBroadcaster:
+                    Giveaways.ReRoll();
+                    break;
+
+                //Queue Commands
                 case "joinqueue" when PlayerQueueSystem.QueueUserCheck(e.Command.ChatMessage.Username) == false:
                     PlayerQueueSystem.QueueAdd(e.Command.ChatMessage.Username);
                     break;
@@ -93,45 +114,23 @@ namespace Bregan_TwitchBot.Commands
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {PlayerQueueSystem.QueueRemoveAmount}");
                     CommandLimiter.AddMessageCount();
                     break;
-            }
-
-            //Giveaway
-
-            switch (e.Command.CommandText)
-            {
-                case "startgiveaway" when e.Command.ChatMessage.IsModerator:
-                case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
-                    Giveaways.StartGiveaway();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "A new giveaway has started! Do !joingiveaway to join!");
-                    return;
-                case "joingiveaway":
-                    Giveaways.AddContestant(e.Command.ChatMessage.Username);
-                    return;
-                case "amountentered" when e.Command.ChatMessage.IsModerator:
-                case "amountentered" when e.Command.ChatMessage.IsBroadcaster:
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaways.AmountOfContestantsEntered()}");
-                    CommandLimiter.AddMessageCount();
-                    break;
-                case "setgiveawaytime" when e.Command.ChatMessage.IsModerator:
-                case "setgiveawaytime" when e.Command.ChatMessage.IsBroadcaster:
-                    Giveaways.SetTimerAmount(e.Command.ChatMessage.Message, e.Command.ChatMessage.Username);
-                    break;
-                case "reroll" when e.Command.ChatMessage.IsModerator:
-                case "reroll" when e.Command.ChatMessage.IsBroadcaster:
-                    Giveaways.ReRoll();
-                    break;
-            }
-
-            //Bad word filter
-
-            switch (e.Command.CommandText)
-            {
+                //Bad word filter
                 case "addbadword" when e.Command.ChatMessage.IsModerator:
                     WordBlackList.AddBadWord(e.Command.ChatMessage.Message);
                     break;
                 case "removebadword" when e.Command.ChatMessage.IsModerator:
                     WordBlackList.RemoveBadWord(e.Command.ChatMessage.Message);
                     break;
+
+                    //Points/time
+                case "points":
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, DatabaseQueries.GetUserPoints(e.Command.ChatMessage.Username).ToString());
+                    break;
+                case "hours":
+                    var time = DatabaseQueries.GetUserTime(e.Command.ChatMessage.Username);
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} => You have {time.TotalMinutes} minutes (about {Math.Round(time.TotalMinutes / 60, 2)} hours) in the stream");
+                    break;
+
             }
         }
     }
