@@ -12,6 +12,7 @@ namespace Bregan_TwitchBot
             //Start
             StartService.ServiceStart();
             Console.ReadLine();
+
         }
     }
 }
