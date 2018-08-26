@@ -39,9 +39,10 @@ C# Twitch bot using TwitchLib
 * !clearqueue
 * !setremoveamount
 
-## Bad word filter
+## Bad word filter (mod)
 ### 
-
+* !addbadword
+* !removebadword
 
 ## Points/hours commands
 ###
