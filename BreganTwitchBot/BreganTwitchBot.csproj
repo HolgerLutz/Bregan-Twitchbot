@@ -3,10 +3,23 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>Bregan_TwitchBot</RootNamespace>
+    <RootNamespace>BreganTwitchBot</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants></DefineConstants>
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="1.0.2" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.1.1226" />
     <PackageReference Include="ICanHazDadJoke.NET" Version="1.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />

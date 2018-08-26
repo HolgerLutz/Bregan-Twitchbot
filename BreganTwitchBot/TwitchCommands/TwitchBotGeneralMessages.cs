@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Bregan_TwitchBot.Commands.Message_Limiter;
-using Bregan_TwitchBot.Connection;
+using BreganTwitchBot.Connection;
+using BreganTwitchBot.TwitchCommands.MessageLimiter;
 using TwitchLib.Client.Enums;
 using TwitchLib.PubSub.Events;
 
-namespace Bregan_TwitchBot.Commands
+namespace BreganTwitchBot.TwitchCommands
 {
-    internal class TwitchBotGeneralMessages
+    class TwitchBotGeneralMessages
     {
         public static void TwitchMessageSetup()
         {
@@ -79,7 +77,7 @@ namespace Bregan_TwitchBot.Commands
         //Connection
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
-            //TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Successfully connected");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Successfully connected");
             Console.WriteLine("[Twitch Connection] Bot Sucessfully connected");
         }
 

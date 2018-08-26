@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Timers;
-using Bregan_TwitchBot.Connection;
-using Bregan_TwitchBot.Commands.Message_Limiter;
+using BreganTwitchBot.Connection;
+using BreganTwitchBot.TwitchCommands.MessageLimiter;
 
-namespace Bregan_TwitchBot.Commands.Giveaway
+namespace BreganTwitchBot.TwitchCommands.Giveaway
 {
-    internal class Giveaways //TODO: see time left and see the timer amount that is set, set sub only, set follow only
+    class Giveaways //TODO: see time left and see the timer amount that is set, set sub only, set follow only
     {
         private static List<string> _contestents;
         public static int TimerAmount;

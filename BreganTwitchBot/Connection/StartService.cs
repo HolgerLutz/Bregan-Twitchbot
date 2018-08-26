@@ -1,23 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Threading;
-using System.Linq;
-using System.Threading.Tasks;
-using Bregan_TwitchBot.Commands;
-using Bregan_TwitchBot.Commands.Big_Ben;
-using Bregan_TwitchBot.Commands.Giveaway;
-using Bregan_TwitchBot.Commands.Message_Limiter;
-using Bregan_TwitchBot.Commands.Queue;
-using Bregan_TwitchBot.Commands.Random_User;
-using Bregan_TwitchBot.Commands.Word_Blacklister;
-using Bregan_TwitchBot.Database;
-using Bregan_TwitchBot.Logging;
+using BreganTwitchBot.Database;
+using BreganTwitchBot.Discord;
+using BreganTwitchBot.Logging;
+using BreganTwitchBot.TwitchCommands;
+using BreganTwitchBot.TwitchCommands.BigBen;
+using BreganTwitchBot.TwitchCommands.Giveaway;
+using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using BreganTwitchBot.TwitchCommands.Queue;
+using BreganTwitchBot.TwitchCommands.RandomUser;
+using BreganTwitchBot.TwitchCommands.WordBlacklister;
+using TwitchLib.Api.Exceptions;
 
-namespace Bregan_TwitchBot.Connection
+namespace BreganTwitchBot.Connection
 {
-    internal class StartService
+    class StartService
     {
         //Config variables
         public static string ChannelName;
@@ -26,6 +24,11 @@ namespace Bregan_TwitchBot.Connection
         public static string PubSubOAuth;
         public static string TwitchAPIOAuth;
         public static string TwitchChannelID;
+        public static string DiscordAPIKey;
+        public static ulong DiscordUsernameID;
+        public static ulong DiscordEventChannelID;
+        public static ulong DiscordAnnouncementChannelID;
+
         public static void ServiceStart()
         {
             var configCheck = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -37,52 +40,80 @@ namespace Bregan_TwitchBot.Connection
             ConfigurationManager.RefreshSection("appSettings");
             var configReload = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
+            //Both channels have to be ulong to work with Discord
+            ulong.TryParse(configReload.AppSettings.Settings["DiscordEventChannelID"].Value, out var discordEventID);
+            ulong.TryParse(configReload.AppSettings.Settings["DiscordAnnouncementChannelID"].Value, out var discordAnnouncementID);
+            ulong.TryParse(configReload.AppSettings.Settings["DiscordNameID"].Value, out var discordUserID);
             //Load config to variables
             ChannelName = configReload.AppSettings.Settings["ChannelName"].Value;
             BotName = configReload.AppSettings.Settings["BotName"].Value;
             BotOAuth = configReload.AppSettings.Settings["ChannelOAuth"].Value;
             PubSubOAuth = configReload.AppSettings.Settings["PubSubOAuth"].Value;
             TwitchAPIOAuth = configReload.AppSettings.Settings["TwitchAPIOAuth"].Value;
+            DiscordAPIKey = configReload.AppSettings.Settings["DiscordAPIKey"].Value;
+            DiscordEventChannelID = discordEventID;
+            DiscordAnnouncementChannelID = discordAnnouncementID;
+            DiscordUsernameID = discordUserID;
 
             if (PubSubOAuth != "NotSet")
             {
-                var pubsub = new PubSubConnection();
-                pubsub.Connect();
+                var pubSub = new PubSubConnection();
+                pubSub.Connect();
             }
 
+            
             //Start the bot
             TwitchBotConnection bot = new TwitchBotConnection();
             bot.Connect();
 
-            //Connect to the API
-            TwitchApiConnection twitchApi = new TwitchApiConnection();
-            twitchApi.Connect();
-            
-            var getUserID = TwitchApiConnection.ApiClient.Users.v5.GetUserByNameAsync(ChannelName).Result.Matches;
-            TwitchChannelID = getUserID[0].Id;
-
+            //DB
             DatabaseSetup.StartupDatabase();
-            
-            //Start Threads
-            Thread t1 = new Thread(CommandListener.CommandListenerSetup); //Commands
-            Thread t2 = new Thread(BotLogging.BotLoggingStart); //Logging
-            Thread t3 = new Thread(WordBlackList.StartBlacklist); //Start word blacklist
-            Thread t4 = new Thread(TimeTracker.UserTimeTracker); //Time tracker that uploads to local database
-            t1.Start();
-            t2.Start();
-            t3.Start();
-            t4.Start();
+
+            //Start Discord if it has been enabled
+            if (DiscordAPIKey != "NotSet")
+            {
+                Thread discordThread = new Thread(DiscordConnection.MainAsync().GetAwaiter().GetResult);
+                discordThread.Start();
+                DiscordEvents.StartDiscordAlerts();
+                DiscordCommands.StartDiscordCommands();
+            }
+
+            //Connect to the API
+            try
+            {
+                TwitchApiConnection twitchApi = new TwitchApiConnection();
+                twitchApi.Connect();
+
+                var getUserID = TwitchApiConnection.ApiClient.Users.v5.GetUserByNameAsync(ChannelName).Result.Matches;
+                TwitchChannelID = getUserID[0].Id;
+            }
+            catch (BadGatewayException)
+            {
+                Console.WriteLine("[Startup] BadGatewayException while connecting to the the Twitch API");
+                throw;
+            }
+            catch (InternalServerErrorException)
+            {
+                Console.WriteLine("[Startup] InternalServerErrorException while connecting to the the Twitch API");
+                throw;
+            }
 
             //Start everything
+            BotLogging.BotLoggingStart(); //Logging
+            CommandListener.CommandListenerSetup(); //Commands
+            
             BigBenBong.Bong(); //Big Ben
             RandomUser.StartGetChattersTimer(); //Get the chatters for random user commands
+            WordBlackList.StartBlacklist(); //Word blacklister
+            TimeTracker.UserTimeTracker(); //Time tracker
             PlayerQueueSystem.QueueCreate(); //Queue
             TwitchBotGeneralMessages.TwitchMessageSetup(); //Sub/bit messages
             CommandLimiter.SetMessageLimit(); //Set Message Limit
             CommandLimiter.ResetMessageLimit(); //Start message resetter
+
             //Giveaway
             Giveaways.IsGiveawayOn = false;
-            Giveaways.TimerAmount = 40000;
+            Giveaways.TimerAmount = 60000;
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
-namespace Bregan_TwitchBot.Commands.Queue
+namespace BreganTwitchBot.TwitchCommands.Queue
 {
-    internal class PlayerQueueSystem
+    class PlayerQueueSystem
     {
         public static int QueueRemoveAmount;
         private static List<string> _playerQueue;

@@ -1,9 +1,9 @@
 ﻿using System;
-using Bregan_TwitchBot.Connection;
+using BreganTwitchBot.Connection;
 
-namespace Bregan_TwitchBot.Logging
+namespace BreganTwitchBot.Logging
 {
-    internal class BotLogging
+    class BotLogging
     {
         public static void BotLoggingStart()
         {
@@ -19,7 +19,7 @@ namespace Bregan_TwitchBot.Logging
         private static void UserTimedOut(object sender, TwitchLib.Client.Events.OnUserTimedoutArgs e)
         {
             Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine($"[User Timedout] {DateTime.Now}: User banned: {e.UserTimeout.Username} Duration: {e.UserTimeout.TimeoutDuration}");
+            Console.WriteLine($"[User Timed out] {DateTime.Now}: User banned: {e.UserTimeout.Username} Duration: {e.UserTimeout.TimeoutDuration}");
             Console.ResetColor();
         }
 

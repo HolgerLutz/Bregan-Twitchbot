@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bregan_TwitchBot.Commands._8Ball
+namespace BreganTwitchBot.TwitchCommands._8Ball
 {
-    internal class EightBall
+    class EightBall
     {
         public static string Ask8Ball()
         {

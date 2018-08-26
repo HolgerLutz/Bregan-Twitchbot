@@ -1,16 +1,13 @@
 ﻿using System;
-using Bregan_TwitchBot.Commands;
-using Bregan_TwitchBot.Commands.Queue;
-using Bregan_TwitchBot.Logging;
-using Bregan_TwitchBot.Connection;
 using TwitchLib.Api;
+using TwitchLib.Api.Exceptions;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
-namespace Bregan_TwitchBot.Connection
+namespace BreganTwitchBot.Connection
 {
-    internal class TwitchBotConnection
+    class TwitchBotConnection
     {
         public static TwitchClient Client;
         private readonly ConnectionCredentials _credentials = new ConnectionCredentials(StartService.BotName, StartService.BotOAuth);
@@ -32,7 +29,7 @@ namespace Bregan_TwitchBot.Connection
         }
     }
 
-    internal class PubSubConnection
+    class PubSubConnection
     {
         public static TwitchPubSub PubSubClient;
         internal void Connect()
@@ -45,7 +42,7 @@ namespace Bregan_TwitchBot.Connection
             void PubSubConnected(object sender, EventArgs e)
             {
                 Console.WriteLine("[PubSub] Connected");
-                PubSubClient.ListenToBitsEvents(TwitchApiConnection.GetChannelId());
+                PubSubClient.ListenToBitsEvents(StartService.TwitchChannelID);
                 PubSubClient.SendTopics(StartService.PubSubOAuth); //NEEDS AUTH CODE OF STREAMER
             }
 
@@ -59,20 +56,28 @@ namespace Bregan_TwitchBot.Connection
         }
     }
 
-    internal class TwitchApiConnection
+    class TwitchApiConnection
     {
         public static TwitchAPI ApiClient;
 
         internal void Connect()
         {
-            ApiClient = new TwitchAPI();
-            ApiClient.Settings.ClientId = StartService.TwitchAPIOAuth;
-        }
+            try
+            {
+                ApiClient = new TwitchAPI();
+                ApiClient.Settings.ClientId = StartService.TwitchAPIOAuth;
+            }
+            catch (BadGatewayException)
+            {
+                Console.WriteLine("[Twitch API Connection] BadGatewayException Error connecting to the Twitch API");
+                throw;
+            }
+            catch (InternalServerErrorException)
+            {
+                Console.WriteLine("[Twitch API Connection] InternalServerErrorException Error connecting to the Twitch API");
+                throw;
+            }
 
-        public static string GetChannelId()
-        {
-            var userList = ApiClient.Users.v5.GetUserByNameAsync(StartService.ChannelName).Result.Matches;
-            return userList[0].Id;
         }
     }
 

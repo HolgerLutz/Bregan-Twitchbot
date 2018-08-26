@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using ICanHazDadJoke.NET;
 
-namespace Bregan_TwitchBot.Commands.DadJoke
+namespace BreganTwitchBot.TwitchCommands.DadJokes
 {
-    internal class DadJoke
+    class DadJoke
     {
         public static async Task<string> DadJokeGenerate()
         {

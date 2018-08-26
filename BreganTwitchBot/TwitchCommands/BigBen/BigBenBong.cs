@@ -1,9 +1,9 @@
 ﻿using System;
-using Bregan_TwitchBot.Connection;
+using BreganTwitchBot.Connection;
 
-namespace Bregan_TwitchBot.Commands.Big_Ben
+namespace BreganTwitchBot.TwitchCommands.BigBen
 {
-    internal class BigBenBong
+    class BigBenBong
     {
         private static bool _hasBongedThisHour;
         public static void Bong()

@@ -7,6 +7,9 @@ C# Twitch bot using TwitchLib
 * Tells dad jokes
 * Queueing system for game rotation
 * Thanks subscriptions
+* Points/hours tracked
+* Discord integration for song requests and announcing when you go live
+
 # Commands
 ## General Commands
 * !8ball <message>
@@ -35,4 +38,19 @@ C# Twitch bot using TwitchLib
 * !removegame
 * !clearqueue
 * !setremoveamount
+
+## Bad word filter
+### 
+
+
+## Points/hours commands
+###
+* !points
+* !hours
+* !gamble
+* !spin <points>
+* !55x2 <points>
+* !jackpot
+* !sr <YT link>
+* !songrequest <YT link>
 

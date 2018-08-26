@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
-using Bregan_TwitchBot.Commands.Message_Limiter;
-using Bregan_TwitchBot.Connection;
+using BreganTwitchBot.Connection;
+using BreganTwitchBot.TwitchCommands.MessageLimiter;
 using TwitchLib.Client.Extensions;
 
-namespace Bregan_TwitchBot.Commands.Word_Blacklister
+namespace BreganTwitchBot.TwitchCommands.WordBlacklister
 {
-    internal class WordBlackList
+    class WordBlackList
     {
         private static List<string> _blacklistedWords;
         private static string _folderPath;
         private static string _badWordFilePath;
-        private static TwitchLib.Api.Services.FollowerService _followerService;
 
         public static void StartBlacklist() //TODO: Throw exceptions if the files are missing but the config file exists
         {
@@ -43,12 +41,6 @@ namespace Bregan_TwitchBot.Commands.Word_Blacklister
                 File.Create(_badWordFilePath).Dispose();
                 Console.WriteLine($"[Word Blacklist] {DateTime.Now}: File successfully created");
             }
-
-            _followerService = new TwitchLib.Api.Services.FollowerService(TwitchApiConnection.ApiClient, 10);
-            _followerService.SetChannelByChannelId(StartService.TwitchChannelID);
-            _followerService.OnServiceStarted += FollowerServiceStarted;
-            _followerService.OnNewFollowersDetected += NewFollowers;
-            _followerService.StartService();
         }
 
         //Bad words
@@ -92,33 +84,18 @@ namespace Bregan_TwitchBot.Commands.Word_Blacklister
         {
             var message = Regex.Replace(e.ChatMessage.Message, @"[^\w\d]|,|_| |","").ToLower();
 
-            foreach (var badword in _blacklistedWords)
+            if (_blacklistedWords.Capacity == 0)
             {
-                if (message.Contains(badword) || e.ChatMessage.Username.Replace("_","").ToLower().Contains(badword))
+                return;
+            }
+
+            foreach (var badWord in _blacklistedWords) 
+            {
+                if (message.Contains(badWord) || e.ChatMessage.Username.Replace("_","").ToLower().Contains(badWord))
                 {
                     TwitchBotConnection.Client.BanUser(e.ChatMessage.Username);
-                    Console.WriteLine($"[Bad Words] BAD WORD DETECTED {badword} was sent by {e.ChatMessage.Username}");
+                    Console.WriteLine($"[Bad Words] BAD WORD DETECTED {badWord} was sent by {e.ChatMessage.Username}");
                     return;
-                }
-            }
-        }
-        private static void FollowerServiceStarted(object sender, TwitchLib.Api.Services.Events.FollowerService.OnServiceStartedArgs e)
-        {
-            Console.WriteLine($"[Follower Service] {DateTime.Now} Follower service started");
-        }
-
-        private static void NewFollowers(object sender, TwitchLib.Api.Services.Events.FollowerService.OnNewFollowersDetectedArgs e)
-        {
-            foreach (var newFollower in e.NewFollowers.ToArray())
-            {
-                Console.WriteLine($"new follower: {newFollower.User.DisplayName}");
-
-                foreach (var badword in _blacklistedWords)
-                {
-                    if (newFollower.User.DisplayName.Replace("_", "").ToLower().Contains(badword))
-                    {
-                        TwitchBotConnection.Client.BanUser(newFollower.User.DisplayName);
-                    }
                 }
             }
         }

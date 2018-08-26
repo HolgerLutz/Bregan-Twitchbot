@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Configuration;
-using System.Threading;
 
-namespace Bregan_TwitchBot.Connection
+namespace BreganTwitchBot.Connection
 {
-    internal class FirstTimeConfig
+    class FirstTimeConfig
     {
         public static void FirstTimeStartup()
         {
@@ -62,11 +61,11 @@ namespace Bregan_TwitchBot.Connection
                     "To thank bit donations, another Twitch Access Token is needed from the channel broadcaster account");
                 Console.WriteLine(
                     "To generate the token, go to https://twitchtokengenerator.com and select Custom Scope Token. Enable bits:read and generate the token");
-                Console.WriteLine("If you don't want bits thanked out, type skip");
+                Console.WriteLine("If you don't want bits thanked out, press enter");
 
                 var pubSubOAuth = Console.ReadLine();
 
-                if (pubSubOAuth == "skip")
+                if (string.IsNullOrWhiteSpace(pubSubOAuth))
                 {
                     Console.Clear();
                     break;
@@ -78,7 +77,6 @@ namespace Bregan_TwitchBot.Connection
                     Console.Clear();
                     break;
                 }
-
                 Console.WriteLine(@"Please enter the Twitch Token or ""skip"" to not enable it");
             }
 
@@ -95,12 +93,54 @@ namespace Bregan_TwitchBot.Connection
                 }
                 Console.WriteLine("Please enter a value");
             }
-
-            Console.WriteLine("Thank you! The Bot has now been setup. To edit this at any time simply type reconfig in the console window");
             config.AppSettings.Settings["BotConfigured"].Value = "true";
-            config.Save();
-            Thread.Sleep(5000);
             Console.Clear();
+
+            //Discord
+            while (true)
+            {
+                Console.WriteLine("Next is discord integration:");
+                Console.WriteLine("Please go to https://discordapp.com/developers/applications/ and create a new API key and enter it");
+                var discordAPIkey = Console.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(discordAPIkey))
+                {
+                    config.AppSettings.Settings["DiscordAPIKey"].Value = discordAPIkey;
+                    Console.Clear();
+                }
+
+                //Discord event channel
+                Console.WriteLine("Go to Discord and enable Developer mode under appearance. Create a channel for bot events and copy the channel ID");
+                var discordEventChannelID = Console.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(discordEventChannelID))
+                {
+                    config.AppSettings.Settings["DiscordEventChannelID"].Value = discordEventChannelID;
+                    Console.Clear();
+                }
+
+                while (true)
+                {
+                    Console.WriteLine("Please copy your Discord User ID and enter it. This is for song requests");
+                    var discordNameID = Console.ReadLine();
+
+                    if (!string.IsNullOrWhiteSpace(discordNameID))
+                    {
+                        config.AppSettings.Settings["DiscordNameID"].Value = discordNameID;
+                        break;
+                    }
+
+                    Console.WriteLine("Please enter a valid ID");
+                }
+
+                //Discord announcement channel
+                Console.WriteLine("Please enter the channel ID for stream announcements");
+                var discordAnnouncementChannelID = Console.ReadLine();
+
+                config.AppSettings.Settings["DiscordAnnouncementChannelID"].Value = discordAnnouncementChannelID;
+                Console.Clear();
+            }
         }
+
     }
 }

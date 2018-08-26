@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Threading;
-using Bregan_TwitchBot.Commands.Big_Ben;
-using Bregan_TwitchBot.Connection;
+using BreganTwitchBot.Connection;
 
-namespace Bregan_TwitchBot
+namespace BreganTwitchBot
 {
     class Program
     {
@@ -12,7 +10,7 @@ namespace Bregan_TwitchBot
             //Start
             StartService.ServiceStart();
             Console.ReadLine();
-
         }
+
     }
 }
