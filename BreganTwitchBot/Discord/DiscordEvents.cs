@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Threading.Tasks;
 using System.Timers;
 using BreganTwitchBot.Connection;
@@ -10,33 +11,40 @@ namespace BreganTwitchBot.Discord
 {
     class DiscordEvents
     {
-        private static bool _streamAnnounced;
-
         public static void StartDiscordAlerts()
         {
             DiscordConnection.DiscordClient.Log += Log;
             DiscordConnection.DiscordClient.UserJoined += UserJoined;
             DiscordConnection.DiscordClient.UserLeft += UserLeft;
 
+            
+
             var timer = new Timer(20000);
             timer.Start();
             timer.Elapsed += Timer_Elapsed;
-            _streamAnnounced = false;
         }
 
         private static void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             try
             {
-                var streamAnnounced = TwitchApiConnection.ApiClient.Streams.v5.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result;
-                if (streamAnnounced && _streamAnnounced == false)
+                var isStreamOn = TwitchApiConnection.ApiClient.Streams.v5.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result;
+                if (isStreamOn && StartService.StreamAnnounced == "false")
                 {
                     DiscordConnection.SendMessage(StartService.DiscordAnnouncementChannelID, $"hey @everyone! {StartService.ChannelName} has gone live! Tune in at https://www.twitch.tv/{StartService.ChannelName} !");
-                    _streamAnnounced = true;
+                    StartService.StreamAnnounced = "true";
+                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    config.AppSettings.Settings["StreamAnnounced"].Value = "true";
+                    config.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection("appSettings");
                 }
-                else if (streamAnnounced == false && _streamAnnounced)
+                else if (isStreamOn == false && StartService.StreamAnnounced == "true")
                 {
-                    _streamAnnounced = false;
+                    StartService.StreamAnnounced = "false";
+                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    config.AppSettings.Settings["StreamAnnounced"].Value = "false";
+                    config.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection("appSettings");
                 }
             }
 

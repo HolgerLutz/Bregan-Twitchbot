@@ -10,6 +10,7 @@ using BreganTwitchBot.TwitchCommands.Giveaway;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
 using BreganTwitchBot.TwitchCommands.Queue;
 using BreganTwitchBot.TwitchCommands.RandomUser;
+using BreganTwitchBot.TwitchCommands.SongRequests;
 using BreganTwitchBot.TwitchCommands.WordBlacklister;
 using TwitchLib.Api.Exceptions;
 
@@ -25,6 +26,7 @@ namespace BreganTwitchBot.Connection
         public static string TwitchAPIOAuth;
         public static string TwitchChannelID;
         public static string DiscordAPIKey;
+        public static string StreamAnnounced;
         public static ulong DiscordUsernameID;
         public static ulong DiscordEventChannelID;
         public static ulong DiscordAnnouncementChannelID;
@@ -51,16 +53,10 @@ namespace BreganTwitchBot.Connection
             PubSubOAuth = configReload.AppSettings.Settings["PubSubOAuth"].Value;
             TwitchAPIOAuth = configReload.AppSettings.Settings["TwitchAPIOAuth"].Value;
             DiscordAPIKey = configReload.AppSettings.Settings["DiscordAPIKey"].Value;
+            StreamAnnounced = configReload.AppSettings.Settings["StreamAnnounced"].Value;
             DiscordEventChannelID = discordEventID;
             DiscordAnnouncementChannelID = discordAnnouncementID;
             DiscordUsernameID = discordUserID;
-
-            if (PubSubOAuth != "NotSet")
-            {
-                var pubSub = new PubSubConnection();
-                pubSub.Connect();
-            }
-
             
             //Start the bot
             TwitchBotConnection bot = new TwitchBotConnection();
@@ -98,13 +94,19 @@ namespace BreganTwitchBot.Connection
                 throw;
             }
 
+            if (PubSubOAuth != "NotSet")
+            {
+                var pubSub = new PubSubConnection();
+                pubSub.Connect();
+            }
+
             //Start everything
             BotLogging.BotLoggingStart(); //Logging
             CommandListener.CommandListenerSetup(); //Commands
-            
             BigBenBong.Bong(); //Big Ben
-            RandomUser.StartGetChattersTimer(); //Get the chatters for random user commands
+            RandomUsers.StartGetChattersTimer(); //Get the chatters for random user commands
             WordBlackList.StartBlacklist(); //Word blacklister
+            SongRequest.SongRequestSetup(); //Song requests
             TimeTracker.UserTimeTracker(); //Time tracker
             PlayerQueueSystem.QueueCreate(); //Queue
             TwitchBotGeneralMessages.TwitchMessageSetup(); //Sub/bit messages

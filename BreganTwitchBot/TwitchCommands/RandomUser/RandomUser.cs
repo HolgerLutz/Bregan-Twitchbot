@@ -6,7 +6,7 @@ using Timer = System.Timers.Timer;
 
 namespace BreganTwitchBot.TwitchCommands.RandomUser
 {
-    class RandomUser
+    class RandomUsers
     {
         private static List<string> _userList;
 
@@ -64,7 +64,7 @@ namespace BreganTwitchBot.TwitchCommands.RandomUser
             }
         }
 
-        public static string SelectRandomUser()
+        public string SelectRandomUser()
         {
             var random = new Random();
             var number = random.Next(0, _userList.Count);

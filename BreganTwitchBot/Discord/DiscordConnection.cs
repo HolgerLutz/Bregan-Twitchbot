@@ -24,12 +24,15 @@ namespace BreganTwitchBot.Discord
         {
             var channel = DiscordClient.GetChannel(channelID) as IMessageChannel;
             await channel.SendMessageAsync(message);
+
         }
 
         public static void SendSongMessage(ulong channelID, string message)
         {
             var channel = DiscordClient.GetChannel(channelID) as IMessageChannel;
-            channel.SendMessageAsync(message).Result.AddReactionAsync(new Emoji("💩"));
+            var sentMessage = channel.SendMessageAsync(message).Result;
+            sentMessage.AddReactionAsync(new Emoji("👍"));
+            sentMessage.AddReactionAsync(new Emoji("👎"));
         }
 
     }

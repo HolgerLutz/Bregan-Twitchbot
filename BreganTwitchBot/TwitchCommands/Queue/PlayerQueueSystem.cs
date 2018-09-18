@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using BreganTwitchBot.Connection;
+using BreganTwitchBot.TwitchCommands.MessageLimiter;
 
 namespace BreganTwitchBot.TwitchCommands.Queue
 {
@@ -15,34 +17,36 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             _playerQueue = new List<string>();
             QueueRemoveAmount = 3;
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("[Player Queue] Player queue sucessfully created");
+            Console.WriteLine($"[Player Queue] {DateTime.Now}: Player queue successfully created");
             Console.ResetColor();
         }
         //Check if user is in queue - don't want to add same person to queue twice
-        public static bool QueueUserCheck(string user)
+        public bool QueueUserCheck(string user)
         {
             return _playerQueue.Contains(user); 
         }
-        //Add user to the end of the player queue
-        public static void QueueAdd(string user)
+
+        public void QueueAdd(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"[Player Queue]{DateTime.Now}: {user} has joined the queue");
             Console.ResetColor();
             _playerQueue.Add(user);
         }
-        //Users can leave the queue if they want
-        public static void QueueRemove(string user)
+
+        public void QueueRemove(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"[Player Queue]{DateTime.Now}: {user} has left the queue");
             Console.ResetColor();
             _playerQueue.Remove(user);
         }
-        //Remove the first 3 people of the queue
-        public static void QueueRemove3()
-        {
-            if (_playerQueue.Count <= QueueRemoveAmount) //If theres only 3 or less then the whole queue can be wiped clean
+
+        //Remove the set amount of people from the queue (default is 3 as set in QueueCreate)
+        public void QueueRemovePlayersAmount()
+        {   
+            //Wipe the whole list if the count of the queue is lower than the emote
+            if (_playerQueue.Count <= QueueRemoveAmount) 
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has been cleared");
@@ -51,7 +55,8 @@ namespace BreganTwitchBot.TwitchCommands.Queue
                 return;
             }
 
-            for (int i = QueueRemoveAmount; i >= 0; i--) //If there are more than 3 then loop through the first 3 people
+            //More than the set amount then remove the first people in the list 
+            for (int i = QueueRemoveAmount; i >= 0; i--)
             {
                 _playerQueue.RemoveAt(i);
             }
@@ -61,7 +66,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             Console.ResetColor();
         }
 
-        public static void QueueClear() //Wipes queue completely ignoring amount of people
+        public void QueueClear()
         {
             _playerQueue.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -69,7 +74,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             Console.ResetColor();
         }
 
-        public static string NextGamePlayers()
+        public string NextGamePlayers()
         {
 
             //If the queue contains less than 4 players return the current amount
@@ -89,19 +94,20 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             return String.Join(", ", nextPlayers);
         }
 
-        public static string CurrentQueue()
+        public string CurrentQueue()
         {
             return String.Join(", ", _playerQueue); //Just show everyone in the queue and splitting them with a comma
         }
 
-        public static void SetQueueRemoveAmount(string message)
+        public void SetQueueRemoveAmount(string amount)
         {
-            var removeCommand = message.Replace("!setremoveamount", "");
 
             try
             {
-                QueueRemoveAmount = int.Parse(removeCommand);
+                QueueRemoveAmount = int.Parse(amount);
                 Console.ForegroundColor = ConsoleColor.Yellow;
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {QueueRemoveAmount}");
+                messageLimter.AddMessageCount();
                 Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue remove amount has been set to {QueueRemoveAmount}");
                 Console.ResetColor();
             }
@@ -121,7 +127,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
 
         }
 
-        public static string GetQueuePosition(string username)
+        public string GetQueuePosition(string username)
         {
             if (_playerQueue.Contains(username))
             {

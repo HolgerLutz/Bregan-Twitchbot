@@ -1,21 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Discord;
 using Microsoft.Data.Sqlite;
+using TwitchLib.Api.Enums;
 using TwitchLib.Api.Exceptions;
 
 namespace BreganTwitchBot.Database
 {
     class TimeTracker
     {
+        private static List<string> _blockedBotsUserList;
+        private static string _folderPath;
+        private static string _blockedBotsUserFilePath;
+
         public static void UserTimeTracker()
         {
             var timer = new Timer(60000);
             timer.Start();
             timer.Elapsed += OnMinute;
+
+            //For the leader boards all bots that are in the stream will need to be removed from gaining points
+            //This is a custom list that can have bots added directly from the chat
+
+            _folderPath = Directory.GetCurrentDirectory();
+            _blockedBotsUserFilePath = Path.Combine(_folderPath, "Config/blockedBots.txt");
+
+            if (!File.Exists(_blockedBotsUserFilePath))
+            {
+                File.Create(_blockedBotsUserFilePath).Dispose();
+                Console.WriteLine($"[Time Tracker] {DateTime.Now}: Blocked bot list created");
+            }
+
+            try
+            {
+                _blockedBotsUserList = new List<string>(File.ReadAllLines(_blockedBotsUserFilePath).ToList());
+                Console.WriteLine($"[Time Tracker] {DateTime.Now}: Blocked bots successfully loaded");
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine($"[Song Blacklist] {DateTime.Now}: File not found... Creating new file");
+                File.Create(_blockedBotsUserFilePath).Dispose();
+                Console.WriteLine($"[Song Blacklist] {DateTime.Now}: File successfully created");
+            }
         }
 
         private static void OnMinute(object sender, ElapsedEventArgs e)
@@ -25,8 +56,10 @@ namespace BreganTwitchBot.Database
                 if (TwitchApiConnection.ApiClient.Streams.v5.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result)
                 {
                     var userList = TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync(StartService.ChannelName).Result;
+
                     foreach (var user in userList)
                     {
+
                         DatabaseQueries.ExecuteQuery($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)");
                         DatabaseQueries.ExecuteQuery($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 10 WHERE username='{user.Username}'");
                         Console.WriteLine($"[Database] {DateTime.Now}: User {user.Username} updated");
@@ -61,7 +94,7 @@ namespace BreganTwitchBot.Database
             }
             userList.Sort();
             //Create the varible to add all users to
-            var users = "Melvins:" + Environment.NewLine;
+            var users = "**Melvins:**" + Environment.NewLine;
 
             foreach (var user in userList)
             {
@@ -91,7 +124,7 @@ namespace BreganTwitchBot.Database
             }
             userList.Sort();
             //Create the varible to add all users to
-            var users = "WOT Crew:" + Environment.NewLine;
+            var users = "**WOT Crew:**" + Environment.NewLine;
 
             foreach (var user in userList)
             {
@@ -120,8 +153,8 @@ namespace BreganTwitchBot.Database
                 userList.Add(Convert.ToString(reader["username"]));
             }
             userList.Sort();
-            //Create the varible to add all users to
-            var users = "BLOCKS Crew:" + Environment.NewLine;
+            //Create the variable to add all users to
+            var users = "**BLOCKS Crew:**" + Environment.NewLine;
 
             foreach (var user in userList)
             {
@@ -151,7 +184,7 @@ namespace BreganTwitchBot.Database
             }
             userList.Sort();
             //Create the varible to add all users to
-            var users = "The name of legends:" + Environment.NewLine;
+            var users = "**The name of legends:**" + Environment.NewLine;
 
             foreach (var user in userList)
             {
@@ -182,7 +215,7 @@ namespace BreganTwitchBot.Database
             }
             userList.Sort();
             //Create the varible to add all users to
-            var users = "King of the stream:" + Environment.NewLine;
+            var users = "**King of the stream:**" + Environment.NewLine;
 
             foreach (var user in userList)
             {

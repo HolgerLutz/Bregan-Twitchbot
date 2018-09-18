@@ -33,7 +33,7 @@ namespace BreganTwitchBot.Database
             DatabaseQueries.ExecuteQuery("CREATE TABLE users (username VARCHAR(50) UNIQUE, minutesInStream bigint, points bigint, lastSongRequest text)");
             DatabaseQueries.ExecuteQuery("CREATE TABLE slotMachine (tier1Wins bigint, tier2Wins bigint, tier3Wins bigint, jackpotWins bigint, totalSpins bigint, jackpotAmount bigint)");
             DatabaseQueries.ExecuteQuery("INSERT INTO slotMachine(tier1Wins,tier2Wins,tier3Wins,jackpotWins,totalSpins,jackpotAmount) VALUES (0,0,0,0,0,0)");
-            Console.WriteLine("database created");
+            Console.WriteLine($"[Database] {DateTime.Now}: Database created");
         }
     }
 }

@@ -5,7 +5,7 @@ namespace BreganTwitchBot.TwitchCommands._8Ball
 {
     class EightBall
     {
-        public static string Ask8Ball()
+        public string Ask8Ball()
         {
             var rng = new Random();
             var randomSelection = rng.Next(0, 18);

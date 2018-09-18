@@ -10,6 +10,7 @@ namespace BreganTwitchBot.TwitchCommands.MessageLimiter
     {
         public static int MessageLimit;
         public static int MessagesSent;
+
         public static void SetMessageLimit()
         {
             try
@@ -28,12 +29,12 @@ namespace BreganTwitchBot.TwitchCommands.MessageLimiter
             }
             catch (BadGatewayException)
             {
-                Console.WriteLine("[Command Limiter] BadGatewayException error has occured while attempting to check bot rank");
+                Console.WriteLine($"[Command Limiter] {DateTime.Now}: BadGatewayException error has occured while attempting to check bot rank");
                 throw;
             }
             catch (InternalServerErrorException)
             {
-                Console.WriteLine("[Command Limiter] InternalServerErrorException error has occured while attempting to check bot rank");
+                Console.WriteLine($"[Command Limiter] {DateTime.Now}: InternalServerErrorException error has occured while attempting to check bot rank");
                 throw;
             }
         }
@@ -50,9 +51,14 @@ namespace BreganTwitchBot.TwitchCommands.MessageLimiter
             MessagesSent = 0;
         }
 
-        public static void AddMessageCount()
+        public void AddMessageCount()
         {
             MessagesSent += 1;
+        }
+
+        public bool CheckMessageLimit()
+        {
+            return MessagesSent >= MessageLimit;
         }
     }
 }

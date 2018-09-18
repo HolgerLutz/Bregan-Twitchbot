@@ -42,21 +42,21 @@ namespace BreganTwitchBot.TwitchCommands.Gambling
                 DatabaseQueries.ExecuteQuery("UPDATE slotMachine SET tier1Wins = tier1Wins + 1");
                 DatabaseQueries.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 12} WHERE username = '{username}'");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 12} points!");
-                CommandLimiter.AddMessageCount();
+                messageLimter.AddMessageCount();
             }
             else if (emoteList[0] == "4Head" && emoteList[1] == "4Head" && emoteList[2] == "4Head")
             {
                 DatabaseQueries.ExecuteQuery("UPDATE slotMachine SET tier2Wins = tier2Wins + 1");
                 DatabaseQueries.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 22} WHERE username = '{username}'");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 22} points!");
-                CommandLimiter.AddMessageCount();
+                messageLimter.AddMessageCount();
             }
             else if (emoteList[0] == "LUL" && emoteList[1] == "LUL" && emoteList[2] == "LUL")
             {
                 DatabaseQueries.ExecuteQuery("UPDATE slotMachine SET tier3Wins = tier3Wins + 1");
                 DatabaseQueries.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 50} WHERE username = '{username}'");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 50} points!");
-                CommandLimiter.AddMessageCount();
+                messageLimter.AddMessageCount();
             }
             else if (emoteList[0] == "TriHard" && emoteList[1] == "TriHard" && emoteList[2] == "TriHard")
             {
@@ -65,12 +65,12 @@ namespace BreganTwitchBot.TwitchCommands.Gambling
                 DatabaseQueries.ExecuteQuery($"UPDATE users SET points = points + {jackpotAmount} WHERE username = '{username}'");
                 DatabaseQueries.ExecuteQuery("UPDATE slotMachine SET jackpotAmount = 0");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. DING DING DING JACKPOT!!! You have won {jackpotAmount} points!");
-                CommandLimiter.AddMessageCount();
+                messageLimter.AddMessageCount();
             }
             else
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. No win :(");
-                CommandLimiter.AddMessageCount();
+                messageLimter.AddMessageCount();
                 DatabaseQueries.ExecuteQuery($"UPDATE slotMachine SET jackpotAmount = jackpotAmount + {pointsGambled}");
             }
 

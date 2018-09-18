@@ -32,26 +32,27 @@ namespace BreganTwitchBot.Connection
     class PubSubConnection
     {
         public static TwitchPubSub PubSubClient;
+
         internal void Connect()
         {
             PubSubClient = new TwitchPubSub();
-            PubSubClient.Connect();
             PubSubClient.OnPubSubServiceConnected += PubSubConnected;
             PubSubClient.OnListenResponse += PubSubClientOnListenResponse;
+            PubSubClient.ListenToBitsEvents(StartService.TwitchChannelID);
+            PubSubClient.Connect();
 
             void PubSubConnected(object sender, EventArgs e)
             {
-                Console.WriteLine("[PubSub] Connected");
-                PubSubClient.ListenToBitsEvents(StartService.TwitchChannelID);
-                PubSubClient.SendTopics(StartService.PubSubOAuth); //NEEDS AUTH CODE OF STREAMER
+                Console.WriteLine($"[PubSub] {DateTime.Now}: Connected");
+                PubSubClient.SendTopics(StartService.PubSubOAuth);
             }
 
             void PubSubClientOnListenResponse(object sender, TwitchLib.PubSub.Events.OnListenResponseArgs e)
             {
                 if (e.Successful)
-                    Console.WriteLine($"Successfully verified listening to topic: {e.Topic}");
+                    Console.WriteLine($"[PubSub] {DateTime.Now}: Successfully verified listening to topic: {e.Topic}");
                 else
-                    Console.WriteLine($"Failed to listen! Error: {e.Response.Error}");
+                    Console.WriteLine($"[PubSub] {DateTime.Now}: Failed to listen! Error: {e.Response.Error}");
             }
         }
     }

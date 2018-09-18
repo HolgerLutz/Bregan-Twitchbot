@@ -21,6 +21,7 @@
     <PackageReference Include="Discord.Net" Version="1.0.2" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.1.1226" />
     <PackageReference Include="ICanHazDadJoke.NET" Version="1.0.0" />
+    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="TwitchLib" Version="2.1.5" />
