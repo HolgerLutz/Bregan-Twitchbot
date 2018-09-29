@@ -1,6 +1,7 @@
 ﻿using System;
+using Serilog;
 using TwitchLib.Api;
-using TwitchLib.Api.Exceptions;
+using TwitchLib.Api.Core.Exceptions;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
@@ -14,7 +15,7 @@ namespace BreganTwitchBot.Connection
 
         internal void Connect()
         {
-            Console.WriteLine("Attempting to connect to twitch chat");
+            Log.Information("Attempting to connect to twitch chat");
             Client = new TwitchClient();
             Client.Initialize(_credentials, StartService.ChannelName);
             Client.Connect();
@@ -25,7 +26,7 @@ namespace BreganTwitchBot.Connection
         private static void OnConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
             Client.SendMessage(StartService.ChannelName,"Successfully connected!");
-            Console.WriteLine($"[Bot Connection] {DateTime.Now}: Bot successfully connected");
+            Log.Information($"[Bot Connection] Bot successfully connected");
         }
     }
 
@@ -39,20 +40,26 @@ namespace BreganTwitchBot.Connection
             PubSubClient.OnPubSubServiceConnected += PubSubConnected;
             PubSubClient.OnListenResponse += PubSubClientOnListenResponse;
             PubSubClient.ListenToBitsEvents(StartService.TwitchChannelID);
+            PubSubClient.ListenToFollows(StartService.TwitchChannelID);
             PubSubClient.Connect();
-
+            
             void PubSubConnected(object sender, EventArgs e)
             {
-                Console.WriteLine($"[PubSub] {DateTime.Now}: Connected");
+                Log.Information("[PubSub] Connected");
                 PubSubClient.SendTopics(StartService.PubSubOAuth);
             }
 
             void PubSubClientOnListenResponse(object sender, TwitchLib.PubSub.Events.OnListenResponseArgs e)
             {
                 if (e.Successful)
-                    Console.WriteLine($"[PubSub] {DateTime.Now}: Successfully verified listening to topic: {e.Topic}");
+                {
+                    Log.Information($"[PubSub] Successfully verified listening to topic: {e.Topic}");
+                }
                 else
-                    Console.WriteLine($"[PubSub] {DateTime.Now}: Failed to listen! Error: {e.Response.Error}");
+                {
+                    Log.Fatal($"[PubSub] Failed to listen! Error: {e.Response.Error}");
+                }
+                    
             }
         }
     }
@@ -68,15 +75,13 @@ namespace BreganTwitchBot.Connection
                 ApiClient = new TwitchAPI();
                 ApiClient.Settings.ClientId = StartService.TwitchAPIOAuth;
             }
-            catch (BadGatewayException)
+            catch (BadGatewayException) //These are the two main errors that occur when the Twitch API goes down
             {
-                Console.WriteLine("[Twitch API Connection] BadGatewayException Error connecting to the Twitch API");
-                throw;
+                Log.Fatal("[Twitch API Connection] BadGatewayException Error connecting to the Twitch API");
             }
             catch (InternalServerErrorException)
             {
-                Console.WriteLine("[Twitch API Connection] InternalServerErrorException Error connecting to the Twitch API");
-                throw;
+                Log.Fatal("[Twitch API Connection] InternalServerErrorException Error connecting to the Twitch API");
             }
 
         }

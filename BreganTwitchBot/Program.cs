@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
 using BreganTwitchBot.Connection;
+using Serilog;
+using Serilog.Core;
+using Serilog.Sinks.RollingFile;
 
 namespace BreganTwitchBot
 {
@@ -9,7 +13,7 @@ namespace BreganTwitchBot
         {
             //Start
             StartService.ServiceStart();
-            Console.ReadLine();
+            Console.Read();
         }
 
     }

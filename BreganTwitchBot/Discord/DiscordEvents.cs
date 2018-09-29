@@ -5,7 +5,7 @@ using System.Timers;
 using BreganTwitchBot.Connection;
 using Discord;
 using Discord.WebSocket;
-using TwitchLib.Api.Exceptions;
+using TwitchLib.Api.Core.Exceptions;
 
 namespace BreganTwitchBot.Discord
 {
@@ -17,8 +17,6 @@ namespace BreganTwitchBot.Discord
             DiscordConnection.DiscordClient.UserJoined += UserJoined;
             DiscordConnection.DiscordClient.UserLeft += UserLeft;
 
-            
-
             var timer = new Timer(20000);
             timer.Start();
             timer.Elapsed += Timer_Elapsed;
@@ -28,7 +26,7 @@ namespace BreganTwitchBot.Discord
         {
             try
             {
-                var isStreamOn = TwitchApiConnection.ApiClient.Streams.v5.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result;
+                var isStreamOn = TwitchApiConnection.ApiClient.V5.Streams.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result;
                 if (isStreamOn && StartService.StreamAnnounced == "false")
                 {
                     DiscordConnection.SendMessage(StartService.DiscordAnnouncementChannelID, $"hey @everyone! {StartService.ChannelName} has gone live! Tune in at https://www.twitch.tv/{StartService.ChannelName} !");
@@ -50,33 +48,31 @@ namespace BreganTwitchBot.Discord
 
             catch (BadGatewayException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[Discord Stream Announcement] A BadGatewayException error has occured while checking if the stream is live.");
+                Serilog.Log.Fatal("[Discord Stream Announcement] A BadGatewayException error has occured while checking if the stream is live.");
                 Console.ResetColor();
-                throw;
             }
             catch (InternalServerErrorException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[Discord Stream Announcement] A InternalServerErrorException error has occured while checking if the stream is live.");
+                Serilog.Log.Fatal("[Discord Stream Announcement] A InternalServerErrorException error has occured while checking if the stream is live.");
                 Console.ResetColor();
-                throw;
             }
         }
 
         private static async Task UserJoined(SocketGuildUser user)
         {
             await DiscordConnection.SendMessage(StartService.DiscordEventChannelID, $"User joined: {user.Username}");
+            Serilog.Log.Information($"[Discord] User joined: {user.Username}");
         }
 
         private static async Task UserLeft(SocketGuildUser user)
         {
             await DiscordConnection.SendMessage(StartService.DiscordEventChannelID, $"User left: {user.Username}");
+            Serilog.Log.Information($"[Discord] User left: {user.Username}");
         }
 
         private static Task Log(LogMessage log)
         {
-            Console.WriteLine(log.ToString());
+            Serilog.Log.Information($"[Discord Event Log] {log.ToString()}");
             return Task.CompletedTask;
         }
     }

@@ -7,8 +7,8 @@ using System.Timers;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Discord;
 using Microsoft.Data.Sqlite;
-using TwitchLib.Api.Enums;
-using TwitchLib.Api.Exceptions;
+using Serilog;
+using TwitchLib.Api.Core.Exceptions;
 
 namespace BreganTwitchBot.Database
 {
@@ -28,57 +28,74 @@ namespace BreganTwitchBot.Database
             //This is a custom list that can have bots added directly from the chat
 
             _folderPath = Directory.GetCurrentDirectory();
-            _blockedBotsUserFilePath = Path.Combine(_folderPath, "Config/blockedBots.txt");
+            _blockedBotsUserFilePath = Path.Combine(_folderPath, "Config/blockedbots.txt");
 
             if (!File.Exists(_blockedBotsUserFilePath))
             {
                 File.Create(_blockedBotsUserFilePath).Dispose();
-                Console.WriteLine($"[Time Tracker] {DateTime.Now}: Blocked bot list created");
+                Log.Information("[Time Tracker] Blocked bot list created");
             }
 
             try
             {
                 _blockedBotsUserList = new List<string>(File.ReadAllLines(_blockedBotsUserFilePath).ToList());
-                Console.WriteLine($"[Time Tracker] {DateTime.Now}: Blocked bots successfully loaded");
+                Log.Information("[Time Tracker] Blocked bots successfully loaded");
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine($"[Song Blacklist] {DateTime.Now}: File not found... Creating new file");
+                Log.Warning("[Time Tracker] File not found... Creating new file");
                 File.Create(_blockedBotsUserFilePath).Dispose();
-                Console.WriteLine($"[Song Blacklist] {DateTime.Now}: File successfully created");
+                Log.Information("[Time Tracker] File successfully created");
             }
         }
 
         private static void OnMinute(object sender, ElapsedEventArgs e)
         {
+            var databaseQuery = new DatabaseQueries();
             try
             {
-                if (TwitchApiConnection.ApiClient.Streams.v5.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result)
+                if (TwitchApiConnection.ApiClient.V5.Streams.BroadcasterOnlineAsync(StartService.TwitchChannelID).Result)
                 {
                     var userList = TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync(StartService.ChannelName).Result;
 
                     foreach (var user in userList)
                     {
-
-                        DatabaseQueries.ExecuteQuery($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)");
-                        DatabaseQueries.ExecuteQuery($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 10 WHERE username='{user.Username}'");
-                        Console.WriteLine($"[Database] {DateTime.Now}: User {user.Username} updated");
+                        if (!_blockedBotsUserList.Contains(user.Username))
+                        {
+                            databaseQuery.ExecuteQuery($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)");
+                            databaseQuery.ExecuteQuery($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 10 WHERE username='{user.Username}'");
+                            Log.Information($"[Database] User {user.Username} updated");
+                        }
                     }
                 }
             }
             catch (BadGatewayException exception)
             {
                 Console.WriteLine(exception);
-                throw;
             }
             catch (InternalServerErrorException exception)
             {
                 Console.WriteLine(exception);
-                throw;
             }
         }
 
-        public static async Task GetAndSendFirstRankUsers()
+        public List<string> GetTopPoints()
+        {
+            var userList = new List<string>();
+            var sqlQuery = "SELECT points FROM users ORDER BY points DESC limit 5";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+            var reader = sqlCommand.ExecuteReader();
+
+            while (reader.Read())
+            {
+                return userList;
+            }
+            return userList;
+        }
+
+
+        public async Task GetAndSendFirstRankUsers()
         {
             //RANK 1 is between 1hour -> 24 hours 59 mins
             var sqlQuery = "SELECT * FROM users WHERE minutesInStream BETWEEN 60 AND 1499";
@@ -108,7 +125,7 @@ namespace BreganTwitchBot.Database
             await DiscordConnection.SendMessage(StartService.DiscordEventChannelID, users); //Sends the users from the loop
         }
 
-        public static async Task GetAndSendSecondRankUsers()
+        public async Task GetAndSendSecondRankUsers()
         {
             //RANK 2 is between 25 hours -> 99 hours 59 mins
             var sqlQuery = "SELECT * FROM users WHERE minutesInStream BETWEEN 1500 AND 5999";
@@ -123,7 +140,7 @@ namespace BreganTwitchBot.Database
                 userList.Add(Convert.ToString(reader["username"]));
             }
             userList.Sort();
-            //Create the varible to add all users to
+            //Create the variable to add all users to
             var users = "**WOT Crew:**" + Environment.NewLine;
 
             foreach (var user in userList)
@@ -138,7 +155,7 @@ namespace BreganTwitchBot.Database
             await DiscordConnection.SendMessage(StartService.DiscordEventChannelID, users); //Sends the users from the loop
         }
 
-        public static async Task GetAndSendThirdRankUsers()
+        public async Task GetAndSendThirdRankUsers()
         {
             //RANK 3 is between 100 hours -> 249 hours 59 minutes
             var sqlQuery = "SELECT * FROM users WHERE minutesInStream BETWEEN 6000 AND 14999";
@@ -168,7 +185,7 @@ namespace BreganTwitchBot.Database
             await DiscordConnection.SendMessage(StartService.DiscordEventChannelID, users); //Sends the users from the loop
         }
 
-        public static async Task GetAndSendFourthRankUsers()
+        public async Task GetAndSendFourthRankUsers()
         {
             //RANK 2 is between 250 hours -> 499 hours 59 minutes
             var sqlQuery = "SELECT * FROM users WHERE minutesInStream BETWEEN 15000 AND 29999";
@@ -183,7 +200,7 @@ namespace BreganTwitchBot.Database
                 userList.Add(Convert.ToString(reader["username"]));
             }
             userList.Sort();
-            //Create the varible to add all users to
+            //Create the variable to add all users to
             var users = "**The name of legends:**" + Environment.NewLine;
 
             foreach (var user in userList)
@@ -199,7 +216,7 @@ namespace BreganTwitchBot.Database
         }
 
 
-        public static async Task GetAndSendFifthRankUsers()
+        public async Task GetAndSendFifthRankUsers()
         {
             //RANK 2 is between 250 hours -> 499 hours 59 minutes
             var sqlQuery = "SELECT * FROM users WHERE minutesInStream > 30000";
@@ -214,7 +231,7 @@ namespace BreganTwitchBot.Database
                 userList.Add(Convert.ToString(reader["username"]));
             }
             userList.Sort();
-            //Create the varible to add all users to
+            //Create the variable to add all users to
             var users = "**King of the stream:**" + Environment.NewLine;
 
             foreach (var user in userList)
@@ -230,7 +247,7 @@ namespace BreganTwitchBot.Database
         }
 
 
-        public static async Task GetAll()
+        public async Task GetAll()
         {
             await GetAndSendFirstRankUsers();
             await GetAndSendSecondRankUsers();

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using BreganTwitchBot.Connection;
-using TwitchLib.Api.Exceptions;
+using Serilog;
+using TwitchLib.Api.Core.Exceptions;
 using Timer = System.Timers.Timer;
 
 namespace BreganTwitchBot.TwitchCommands.RandomUser
@@ -22,17 +23,13 @@ namespace BreganTwitchBot.TwitchCommands.RandomUser
                     _userList.Add(user.Username);
                 }
             }
-            catch (BadGatewayException e)
+            catch (BadGatewayException)
             {
-                Console.WriteLine(e);
-                Console.WriteLine("it broke");
-                throw;
+                Log.Fatal("[Random User] BadGatewayException when attempting to receive the user list");
             }
-            catch (InternalServerErrorException e)
+            catch (InternalServerErrorException)
             {
-                Console.WriteLine(e);
-                Console.WriteLine("it broke");
-                throw;
+                Log.Fatal("[Random User] InternalServerErrorException when attempting to receive the user list");
             }
             var timer = new Timer(20000);
             timer.Start();
@@ -50,17 +47,13 @@ namespace BreganTwitchBot.TwitchCommands.RandomUser
                     _userList.Add(user.Username);
                 }
             }
-            catch (BadGatewayException errorException)
+            catch (BadGatewayException)
             {
-                Console.WriteLine(errorException);
-                Console.WriteLine("it broke");
-                throw;
+                Log.Fatal("[Random User] BadGatewayException when attempting to receive the user list");
             }
-            catch (InternalServerErrorException errorException)
+            catch (InternalServerErrorException)
             {
-                Console.WriteLine(errorException);
-                Console.WriteLine("it broke");
-                throw;
+                Log.Fatal("[Random User] InternalServerErrorException when attempting to receive the user list");
             }
         }
 

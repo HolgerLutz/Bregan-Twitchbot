@@ -1,5 +1,6 @@
 ﻿using System;
 using BreganTwitchBot.Connection;
+using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands.BigBen
 {
@@ -12,8 +13,6 @@ namespace BreganTwitchBot.TwitchCommands.BigBen
             var timer = new System.Timers.Timer(15000); //Check every 15 secs
             timer.Start();
             timer.Elapsed += TimeCheck;
-            
-
         }
 
         private static void TimeCheck(object sender, System.Timers.ElapsedEventArgs e)
@@ -122,9 +121,7 @@ namespace BreganTwitchBot.TwitchCommands.BigBen
             }
 
             _hasBongedThisHour = true;
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("[Bonger] Sucessfully bonged");
-            Console.ResetColor();
+            Log.Information("[Big Ben Bonger] Successfully bonged");
         }
     }
 }

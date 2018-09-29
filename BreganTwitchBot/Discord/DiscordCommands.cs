@@ -8,14 +8,15 @@ namespace BreganTwitchBot.Discord
     {
         public static void StartDiscordCommands()
         {
-            DiscordConnection.DiscordClient.MessageReceived += MessageRecieved;
+            DiscordConnection.DiscordClient.MessageReceived += MessageReceived;
         }
 
-        private static async Task MessageRecieved(SocketMessage message)
+        private static async Task MessageReceived(SocketMessage message)
         {
             if (message.Content.StartsWith("!getall"))
             {
-                await TimeTracker.GetAll();
+                var time = new TimeTracker();
+                await time.GetAll();
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands.Queue
 {
@@ -17,7 +18,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             _playerQueue = new List<string>();
             QueueRemoveAmount = 3;
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue] {DateTime.Now}: Player queue successfully created");
+            Log.Information("[Player Queue] Player queue successfully created");
             Console.ResetColor();
         }
         //Check if user is in queue - don't want to add same person to queue twice
@@ -29,16 +30,14 @@ namespace BreganTwitchBot.TwitchCommands.Queue
         public void QueueAdd(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue]{DateTime.Now}: {user} has joined the queue");
+            Log.Information($"[Player Queue] {user} has joined the queue");
             Console.ResetColor();
             _playerQueue.Add(user);
         }
 
         public void QueueRemove(string user)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue]{DateTime.Now}: {user} has left the queue");
-            Console.ResetColor();
+            Log.Information($"[Player Queue] {user} has left the queue");
             _playerQueue.Remove(user);
         }
 
@@ -48,9 +47,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             //Wipe the whole list if the count of the queue is lower than the emote
             if (_playerQueue.Count <= QueueRemoveAmount) 
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has been cleared");
-                Console.ResetColor();
+                Log.Information("[Player Queue] The queue has been cleared");
                 _playerQueue.Clear();
                 return;
             }
@@ -61,16 +58,14 @@ namespace BreganTwitchBot.TwitchCommands.Queue
                 _playerQueue.RemoveAt(i);
             }
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue]{DateTime.Now}: The queue has removed {QueueRemoveAmount} people");
-            Console.ResetColor();
+            Log.Information($"[Player Queue] The queue has removed {QueueRemoveAmount} people");
         }
 
         public void QueueClear()
         {
             _playerQueue.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue has been cleared completely");
+            Log.Information("[Player Queue] The queue has been cleared completely");
             Console.ResetColor();
         }
 
@@ -101,26 +96,27 @@ namespace BreganTwitchBot.TwitchCommands.Queue
 
         public void SetQueueRemoveAmount(string amount)
         {
+            var messageLimiter = new CommandLimiter();
 
             try
             {
                 QueueRemoveAmount = int.Parse(amount);
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {QueueRemoveAmount}");
-                messageLimter.AddMessageCount();
-                Console.WriteLine($"[Player Queue] {DateTime.Now}: The queue remove amount has been set to {QueueRemoveAmount}");
+                messageLimiter.AddMessageCount();
+                Log.Information($"[Player Queue] The queue remove amount has been set to {QueueRemoveAmount}");
                 Console.ResetColor();
             }
             catch (FormatException)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[Player Queue] {DateTime.Now}: A user attempted to break the bot! (Format Exeception)");
+                Log.Warning("[Player Queue] A user attempted to break the bot! (Format Exeception)");
                 Console.ResetColor();
             }
             catch (OverflowException)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[Player Queue] {DateTime.Now}: A user attempted to break the bot! (Overflow Exeception)");
+                Log.Warning("[Player Queue] A user attempted to break the bot! (Overflow Exeception)");
                 Console.ResetColor();
             }
 

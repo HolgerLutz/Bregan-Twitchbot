@@ -2,6 +2,7 @@
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Database;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using Serilog;
 using TwitchLib.Client.Enums;
 using TwitchLib.PubSub.Events;
 
@@ -9,8 +10,14 @@ namespace BreganTwitchBot.TwitchCommands
 {
     class TwitchBotGeneralMessages
     {
+        private static DatabaseQueries _databaseQuery;
+        private static CommandLimiter _messageLimiter;
+
         public static void TwitchMessageSetup()
         {
+            _databaseQuery = new DatabaseQueries();
+            _messageLimiter = new CommandLimiter();
+
             TwitchBotConnection.Client.OnConnected += BotConnectedToChannel;
             TwitchBotConnection.Client.OnNewSubscriber += NewSub;
             TwitchBotConnection.Client.OnReSubscriber += Resub;
@@ -29,21 +36,21 @@ namespace BreganTwitchBot.TwitchCommands
                 case SubscriptionPlan.NotSet:
                 case SubscriptionPlan.Tier1:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientUserName} a sub PogChamp <3");
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 15000);
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 15000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier2:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientDisplayName} a tier 2 sub PogChamp PogChamp <3 <3");
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 30000);
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 30000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier3:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientDisplayName} a tier 3 sub PogChamp PogChamp PogChamp <3 <3 <3");
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 45000);
-                    DatabaseQueries.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 45000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _messageLimiter.AddMessageCount();
                     break;
             }
             
@@ -56,23 +63,23 @@ namespace BreganTwitchBot.TwitchCommands
                 case SubscriptionPlan.Tier1:
                 case SubscriptionPlan.NotSet:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months! PogChamp <3");
-                    DatabaseQueries.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 10000 + e.ReSubscriber.Months * 2000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 10000 + e.ReSubscriber.Months * 2000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier2:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a tier 2 subscription! PogChamp PogChamp <3 <3");
-                    DatabaseQueries.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 20000 + e.ReSubscriber.Months * 2000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 20000 + e.ReSubscriber.Months * 2000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier3:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a tier 3 sub! PogChamp PogChamp PogChamp <3 <3 <3");
-                    DatabaseQueries.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 30000 + e.ReSubscriber.Months * 2000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 30000 + e.ReSubscriber.Months * 2000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Prime:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome back {e.ReSubscriber.DisplayName} for {e.ReSubscriber.Months} months with a Twitch Prime sub! PogChamp <3");
-                    DatabaseQueries.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 10000 + e.ReSubscriber.Months * 2000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 10000 + e.ReSubscriber.Months * 2000);
+                    _messageLimiter.AddMessageCount();
                     break;
             }
         }
@@ -84,23 +91,23 @@ namespace BreganTwitchBot.TwitchCommands
                 case SubscriptionPlan.Tier1:
                 case SubscriptionPlan.NotSet:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad! PogChamp");
-                    DatabaseQueries.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 10000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 10000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier2:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a tier 2 sub! PogChamp PogChamp");
-                    DatabaseQueries.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 20000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 20000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier3:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a tier 3 sub! PogChamp PogChamp PogChamp <3 <3 <3");
-                    DatabaseQueries.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 30000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 30000);
+                    _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Prime:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Welcome {e.Subscriber.DisplayName} to the {StartService.ChannelName} squad with a Twitch Prime sub! PogChamp");
-                    DatabaseQueries.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 10000);
-                    messageLimter.AddMessageCount();
+                    _databaseQuery.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 10000);
+                    _messageLimiter.AddMessageCount();
                     break;
             }
         }
@@ -108,17 +115,18 @@ namespace BreganTwitchBot.TwitchCommands
         private static void BotConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Successfully connected");
-            Console.WriteLine($"[Twitch Connection] {DateTime.Now}: Bot Successfully connected");
+            Log.Information("[Twitch Connection] Bot Successfully connected");
         }
 
       
         private static void BitsDonated(object sender, OnBitsReceivedArgs e)
         {
-            Console.WriteLine($"[PubSub] {DateTime.Now}: Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Username} has donated {e.BitsUsed} bits with a grand total of {e.TotalBitsUsed} donated PogChamp You have gained {e.BitsUsed * 20} points");
-            DatabaseQueries.AddUserPoints(e.Username.ToLower(), e.BitsUsed * 20);
-            messageLimter.AddMessageCount();
+            Log.Information($"[PubSub] Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
+            var message = $"{e.Username} has donated {e.BitsUsed} bits with a grand total of {e.TotalBitsUsed} donated PogChamp You have gained {e.BitsUsed * 20} points";
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
+            Log.Information($"[Twitch Message Sent] {message}");
+            _databaseQuery.AddUserPoints(e.Username.ToLower(), e.BitsUsed * 20);
+            _messageLimiter.AddMessageCount();
         }
-
     }
 }

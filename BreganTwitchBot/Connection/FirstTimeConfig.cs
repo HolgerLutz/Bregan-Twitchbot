@@ -57,10 +57,8 @@ namespace BreganTwitchBot.Connection
             //PubSub OAuth
             while (true)
             {
-                Console.WriteLine(
-                    "To thank bit donations, another Twitch Access Token is needed from the channel broadcaster account");
-                Console.WriteLine(
-                    "To generate the token, go to https://twitchtokengenerator.com and select Custom Scope Token. Enable bits:read and generate the token");
+                Console.WriteLine("To thank bit donations, another Twitch Access Token is needed from the channel broadcaster account");
+                Console.WriteLine("To generate the token, go to https://twitchtokengenerator.com and select Custom Scope Token. Enable bits:read and generate the token");
                 Console.WriteLine("If you don't want bits thanked out, press enter");
 
                 var pubSubOAuth = Console.ReadLine();

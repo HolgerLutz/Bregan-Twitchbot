@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using Serilog;
 using TwitchLib.Client.Extensions;
 
 namespace BreganTwitchBot.TwitchCommands.WordBlacklister
@@ -26,22 +27,37 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
             {
                 Directory.CreateDirectory(Path.Combine(_folderPath, "Config"));
                 File.Create(_badWordFilePath).Dispose();
-                Console.WriteLine($"[Word Blacklist] {DateTime.Now}: File successfully created");
+                Log.Information("[Word Blacklist] File successfully created");
                 TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
                 return;
             }
             try
             {
                 _blacklistedWords = new List<string>(File.ReadAllLines(_badWordFilePath).ToList());
-                Console.WriteLine($"[Word Blacklist] {DateTime.Now}: Words and names successfully loaded");
+                Log.Information("[Word Blacklist] Words and names successfully loaded");
                 TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine($"[Word Blacklist] {DateTime.Now}: File not found... Creating new file");
+                Log.Warning("[Word Blacklist] File not found... Creating new file");
                 Directory.CreateDirectory(Path.Combine(_folderPath, "Config"));
                 File.Create(_badWordFilePath).Dispose();
-                Console.WriteLine($"[Word Blacklist] {DateTime.Now}: File successfully created");
+                Log.Information("[Word Blacklist] File successfully created");
+            }
+            PubSubConnection.PubSubClient.OnFollow += OnFollow;
+        }
+
+        private static void OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
+        {
+            Log.Information($"[New Twitch Follow] {e.Username} just followed!");
+            foreach (var badWord in _blacklistedWords)
+            {
+                if (e.DisplayName.Replace("_", "").ToLower().Contains(badWord))
+                {
+                    TwitchBotConnection.Client.BanUser(StartService.ChannelName, e.Username, "offensive name");
+                    Log.Information($"[Word Blacklist] {e.DisplayName} has been banned for having an offensive name");
+                    return;
+                }
             }
         }
 
@@ -57,7 +73,7 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
             _blacklistedWords.Add(word);
             File.AppendAllText(_badWordFilePath, word + Environment.NewLine);
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName,"Word successfully blacklisted");
-            Console.WriteLine($"[Word Blacklist] {DateTime.Now}: {word} has been blacklisted");
+            Log.Information($"[Word Blacklist] {word} has been blacklisted");
         }
 
         public void RemoveBadWord(string word)
@@ -75,7 +91,7 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
             {
                 File.AppendAllText(_badWordFilePath, badword + Environment.NewLine); //Add each word back in except from the removed one
             }
-            Console.WriteLine($"[Word Blacklist] {DateTime.Now}: {word} has been removed from the blacklist");
+            Log.Information($"[Word Blacklist] {word} has been removed from the blacklist");
         }
 
         private static void MessageReceived(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
@@ -91,8 +107,8 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
             {
                 if (message.Contains(badWord) || e.ChatMessage.Username.Replace("_","").ToLower().Contains(badWord))
                 {
-                    TwitchBotConnection.Client.BanUser(e.ChatMessage.Username);
-                    Console.WriteLine($"[Bad Words] {DateTime.Now}: BAD WORD DETECTED {badWord} was sent by {e.ChatMessage.Username}");
+                    TwitchBotConnection.Client.BanUser(StartService.ChannelName, e.ChatMessage.Username, "offensive word");
+                    Log.Warning($"[Word Blacklist] BAD WORD DETECTED {badWord} was sent by {e.ChatMessage.Username}");
                     return;
                 }
             }

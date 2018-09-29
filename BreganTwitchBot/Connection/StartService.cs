@@ -12,7 +12,8 @@ using BreganTwitchBot.TwitchCommands.Queue;
 using BreganTwitchBot.TwitchCommands.RandomUser;
 using BreganTwitchBot.TwitchCommands.SongRequests;
 using BreganTwitchBot.TwitchCommands.WordBlacklister;
-using TwitchLib.Api.Exceptions;
+using Serilog;
+using TwitchLib.Api.Core.Exceptions;
 
 namespace BreganTwitchBot.Connection
 {
@@ -38,7 +39,6 @@ namespace BreganTwitchBot.Connection
             {
                 FirstTimeConfig.FirstTimeStartup();
             }
-            
             ConfigurationManager.RefreshSection("appSettings");
             var configReload = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
@@ -80,18 +80,16 @@ namespace BreganTwitchBot.Connection
                 TwitchApiConnection twitchApi = new TwitchApiConnection();
                 twitchApi.Connect();
 
-                var getUserID = TwitchApiConnection.ApiClient.Users.v5.GetUserByNameAsync(ChannelName).Result.Matches;
+                var getUserID = TwitchApiConnection.ApiClient.V5.Users.GetUserByNameAsync(ChannelName).Result.Matches;
                 TwitchChannelID = getUserID[0].Id;
             }
             catch (BadGatewayException)
             {
-                Console.WriteLine("[Startup] BadGatewayException while connecting to the the Twitch API");
-                throw;
+                Log.Fatal("[Startup] BadGatewayException while connecting to the the Twitch API");
             }
             catch (InternalServerErrorException)
             {
-                Console.WriteLine("[Startup] InternalServerErrorException while connecting to the the Twitch API");
-                throw;
+                Log.Fatal("[Startup] InternalServerErrorException while connecting to the the Twitch API");
             }
 
             if (PubSubOAuth != "NotSet")

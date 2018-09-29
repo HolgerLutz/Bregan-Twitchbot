@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Timers;
 using BreganTwitchBot.Connection;
-using TwitchLib.Api.Enums;
-using TwitchLib.Api.Exceptions;
+using Serilog;
+using TwitchLib.Api.Core.Enums;
+using TwitchLib.Api.Core.Exceptions;
 
 namespace BreganTwitchBot.TwitchCommands.MessageLimiter
 {
@@ -23,18 +24,17 @@ namespace BreganTwitchBot.TwitchCommands.MessageLimiter
                         MessageLimit = 95;
                         return;
                     }
-
                     MessageLimit = 15;
                 }
             }
             catch (BadGatewayException)
             {
-                Console.WriteLine($"[Command Limiter] {DateTime.Now}: BadGatewayException error has occured while attempting to check bot rank");
+                Log.Fatal("[Command Limiter] BadGatewayException error has occured while attempting to check bot rank");
                 throw;
             }
             catch (InternalServerErrorException)
             {
-                Console.WriteLine($"[Command Limiter] {DateTime.Now}: InternalServerErrorException error has occured while attempting to check bot rank");
+                Log.Fatal("[Command Limiter] InternalServerErrorException error has occured while attempting to check bot rank");
                 throw;
             }
         }
