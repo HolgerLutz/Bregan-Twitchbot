@@ -11,6 +11,7 @@ using BreganTwitchBot.TwitchCommands.MessageLimiter;
 using BreganTwitchBot.TwitchCommands.Queue;
 using BreganTwitchBot.TwitchCommands.RandomUser;
 using BreganTwitchBot.TwitchCommands.SongRequests;
+using BreganTwitchBot.TwitchCommands.Supermods;
 using BreganTwitchBot.TwitchCommands.WordBlacklister;
 using Serilog;
 using TwitchLib.Api.Core.Exceptions;
@@ -62,6 +63,9 @@ namespace BreganTwitchBot.Connection
             TwitchBotConnection bot = new TwitchBotConnection();
             bot.Connect();
 
+            //Logging
+            BotLogging.BotLoggingStart();
+
             //DB
             DatabaseSetup.StartupDatabase();
 
@@ -99,7 +103,7 @@ namespace BreganTwitchBot.Connection
             }
 
             //Start everything
-            BotLogging.BotLoggingStart(); //Logging
+
             CommandListener.CommandListenerSetup(); //Commands
             BigBenBong.Bong(); //Big Ben
             RandomUsers.StartGetChattersTimer(); //Get the chatters for random user commands
@@ -110,6 +114,7 @@ namespace BreganTwitchBot.Connection
             TwitchBotGeneralMessages.TwitchMessageSetup(); //Sub/bit messages
             CommandLimiter.SetMessageLimit(); //Set Message Limit
             CommandLimiter.ResetMessageLimit(); //Start message resetter
+            Supermod.SupermodSetup(); //Setup supermods
 
             //Giveaway
             Giveaways.IsGiveawayOn = false;

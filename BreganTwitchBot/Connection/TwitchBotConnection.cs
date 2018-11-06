@@ -26,7 +26,7 @@ namespace BreganTwitchBot.Connection
         private static void OnConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
             Client.SendMessage(StartService.ChannelName,"Successfully connected!");
-            Log.Information($"[Bot Connection] Bot successfully connected");
+            Log.Information("[Bot Connection] Bot successfully connected");
         }
     }
 

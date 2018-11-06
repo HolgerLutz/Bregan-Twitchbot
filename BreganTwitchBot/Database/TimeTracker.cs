@@ -79,22 +79,6 @@ namespace BreganTwitchBot.Database
             }
         }
 
-        public List<string> GetTopPoints()
-        {
-            var userList = new List<string>();
-            var sqlQuery = "SELECT points FROM users ORDER BY points DESC limit 5";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-            sqlCommand.ExecuteNonQuery();
-            var reader = sqlCommand.ExecuteReader();
-
-            while (reader.Read())
-            {
-                return userList;
-            }
-            return userList;
-        }
-
-
         public async Task GetAndSendFirstRankUsers()
         {
             //RANK 1 is between 1hour -> 24 hours 59 mins

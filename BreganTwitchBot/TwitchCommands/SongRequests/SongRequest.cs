@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using System.Web;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Database;
 using BreganTwitchBot.Discord;
@@ -54,7 +54,9 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
 
         public void AddBlacklistedSong(string song)
         {
-            if (_blacklistedSongList.Contains(song))
+            var youtubeId = GetYoutubeId(song);
+
+            if (_blacklistedSongList.Contains(youtubeId))
             {
                 var message = "That song is already on the blacklist";
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
@@ -63,15 +65,16 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
                 return;
             }
 
-            _blacklistedSongList.Add(song);
-            File.AppendAllText(_blacklistedSongsFilePath, song + Environment.NewLine);
+            _blacklistedSongList.Add(youtubeId);
+            File.AppendAllText(_blacklistedSongsFilePath, youtubeId + Environment.NewLine);
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "song successfully blacklisted");
             Log.Information($"[Song Blacklist] {song} has been blacklisted");
         }
 
         public bool IsSongBlacklisted(string song)
         {
-            return _blacklistedSongList.Contains(song);
+            var youtubeId = GetYoutubeId(song);
+            return _blacklistedSongList.Contains(youtubeId);
         }
 
         public void SendSong(string song, string username, int points)
@@ -110,6 +113,24 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
                 return false;
             }
             return true;
+        }
+
+        public string GetYoutubeId(string youtubeId)
+        {
+            var uri = new Uri(youtubeId);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            string videoId;
+
+            if (query.AllKeys.Contains("v"))
+            {
+                //Youtube video IDs always start with v= so need to query just that section
+                videoId = query["v"];
+                return videoId;
+            }
+            //Links like you.be do not have v in the name so just return the last segment
+            videoId = uri.Segments.Last(); 
+            return videoId;
         }
     }
 }

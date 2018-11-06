@@ -73,15 +73,25 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
 
         public void AddContestant(string username)
         {
+            var commandLimiter = new CommandLimiter();
             if (IsGiveawayOn && !_contestents.Contains(username))
             {
                 _contestents.Add(username);
                 Log.Information($"[Giveaway] {username} has entered the giveaway");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{username} => You have entered the giveaway. Good luck!");
+                commandLimiter.AddMessageCount();
                 return;
             }
-
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "There is no giveaway running currently");
+             if (IsGiveawayOn == false)
+            {
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "There is no giveaway running currently");
+                Log.Information("[Twitch Message Sent] There is no giveaway running currently");
+                commandLimiter.AddMessageCount();
+                return;
+            }
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{username} => You are already in the giveaway!");
+            Log.Information($"[Twitch Message Sent] @{username} => You are already in the giveaway!");
+            commandLimiter.AddMessageCount();
         }
 
         public string AmountOfContestantsEntered()
