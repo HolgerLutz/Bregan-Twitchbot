@@ -26,11 +26,6 @@ namespace BreganTwitchBot.Database
             //This is a custom list that can have bots added directly from the chat
             var databaseQuery = new DatabaseQueries();
             _blockedBotsUserList = new List<string>(databaseQuery.LoadBlockedBots());
-
-            foreach (var VARIABLE in _blockedBotsUserList)
-            {
-                Console.WriteLine(VARIABLE);
-            }
             Log.Information("[Blocked Bots] Bots successfully loaded");
         }
 
