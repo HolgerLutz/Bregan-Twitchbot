@@ -189,5 +189,65 @@ namespace BreganTwitchBot.Database
             sqlCommand.ExecuteNonQuery();
         }
 
+        public List<string> LoadBlockedBots()
+        {
+            var userList = new List<string>();
+            var sqlQuery = "SELECT word FROM blacklist WHERE type='bot'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            var reader = sqlCommand.ExecuteReader();
+            while (reader.Read())
+            {
+                userList.Add(reader["word"].ToString());
+            }
+
+            return userList;
+        }
+
+        public List<string> LoadBlacklistedSongs()
+        {
+            var userList = new List<string>();
+            var sqlQuery = "SELECT word FROM blacklist WHERE type='song'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            var reader = sqlCommand.ExecuteReader();
+            while (reader.Read())
+            {
+                userList.Add(reader["word"].ToString());
+            }
+
+            return userList;
+        }
+
+        public List<string> LoadBlacklistedWords()
+        {
+            var userList = new List<string>();
+            var sqlQuery = "SELECT word FROM blacklist WHERE type='word'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            var reader = sqlCommand.ExecuteReader();
+            while (reader.Read())
+            {
+                userList.Add(reader["word"].ToString());
+            }
+
+            return userList;
+        }
+
+        public void AddBlacklistedItem(string item, string itemType)
+        {
+            var sqlQuery = $"INSERT INTO blacklist (word, type) VALUES ('{item}','{itemType}')";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public void RemoveBlacklistedItem(string item)
+        {
+            var sqlQuery = $"DELETE FROM blacklist WHERE word='{item}'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            sqlCommand.ExecuteNonQuery();
+        }
     }
 }

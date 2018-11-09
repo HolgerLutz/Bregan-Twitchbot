@@ -479,11 +479,11 @@ namespace BreganTwitchBot.TwitchCommands
                 //Supermods
                 case "addsupermod" when supermod.CheckSupermod(e.Command.ChatMessage.Username):
                 case "addsupermod" when e.Command.ChatMessage.Username == e.Command.ChatMessage.BotUsername:
-                    supermod.AddSupermod(e.Command.ArgumentsAsList[0], e.Command.ChatMessage.Username);
+                    supermod.AddSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
                     break;
                 case "removesupermod" when e.Command.ChatMessage.IsBroadcaster:
                 case "removesupermod" when e.Command.ChatMessage.Username == e.Command.ChatMessage.BotUsername:
-                    supermod.RemoveSupermod(e.Command.ArgumentsAsList[0], e.Command.ChatMessage.Username);
+                    supermod.RemoveSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
                     break;
             }
 

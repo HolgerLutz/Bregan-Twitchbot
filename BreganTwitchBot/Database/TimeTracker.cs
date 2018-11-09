@@ -15,8 +15,6 @@ namespace BreganTwitchBot.Database
     class TimeTracker
     {
         private static List<string> _blockedBotsUserList;
-        private static string _folderPath;
-        private static string _blockedBotsUserFilePath;
 
         public static void UserTimeTracker()
         {
@@ -26,27 +24,14 @@ namespace BreganTwitchBot.Database
 
             //For the leader boards all bots that are in the stream will need to be removed from gaining points
             //This is a custom list that can have bots added directly from the chat
+            var databaseQuery = new DatabaseQueries();
+            _blockedBotsUserList = new List<string>(databaseQuery.LoadBlockedBots());
 
-            _folderPath = Directory.GetCurrentDirectory();
-            _blockedBotsUserFilePath = Path.Combine(_folderPath, "Config/blockedbots.txt");
-
-            if (!File.Exists(_blockedBotsUserFilePath))
+            foreach (var VARIABLE in _blockedBotsUserList)
             {
-                File.Create(_blockedBotsUserFilePath).Dispose();
-                Log.Information("[Time Tracker] Blocked bot list created");
+                Console.WriteLine(VARIABLE);
             }
-
-            try
-            {
-                _blockedBotsUserList = new List<string>(File.ReadAllLines(_blockedBotsUserFilePath).ToList());
-                Log.Information("[Time Tracker] Blocked bots successfully loaded");
-            }
-            catch (FileNotFoundException)
-            {
-                Log.Warning("[Time Tracker] File not found... Creating new file");
-                File.Create(_blockedBotsUserFilePath).Dispose();
-                Log.Information("[Time Tracker] File successfully created");
-            }
+            Log.Information("[Blocked Bots] Bots successfully loaded");
         }
 
         private static void OnMinute(object sender, ElapsedEventArgs e)

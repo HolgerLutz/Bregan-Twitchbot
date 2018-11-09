@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BreganTwitchBot.Connection;
+using BreganTwitchBot.Database;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
 using Serilog;
 using TwitchLib.Client.Extensions;
@@ -13,37 +14,16 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
     class WordBlackList
     {
         private static List<string> _blacklistedWords;
-        private static string _folderPath;
-        private static string _badWordFilePath;
+        private static DatabaseQueries _databaseQuery;
         private static CommandLimiter _commandLimiter;
 
         public static void StartBlacklist() //TODO: Throw exceptions if the files are missing but the config file exists
         {
-            _folderPath = Directory.GetCurrentDirectory();
-            _badWordFilePath = Path.Combine(_folderPath, "Config/blacklistedwords.txt"); //Some of the words may produce false bans in everyday chat
             _commandLimiter = new CommandLimiter();
+            _databaseQuery = new DatabaseQueries();
 
-            if (!Directory.Exists(Path.Combine(_folderPath, "Config"))) //If the path doesn't exist then create it & create file
-            {
-                Directory.CreateDirectory(Path.Combine(_folderPath, "Config"));
-                File.Create(_badWordFilePath).Dispose();
-                Log.Information("[Word Blacklist] File successfully created");
-                TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
-                return;
-            }
-            try
-            {
-                _blacklistedWords = new List<string>(File.ReadAllLines(_badWordFilePath).ToList());
-                Log.Information("[Word Blacklist] Words and names successfully loaded");
-                TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
-            }
-            catch (FileNotFoundException)
-            {
-                Log.Warning("[Word Blacklist] File not found... Creating new file");
-                Directory.CreateDirectory(Path.Combine(_folderPath, "Config"));
-                File.Create(_badWordFilePath).Dispose();
-                Log.Information("[Word Blacklist] File successfully created");
-            }
+            _blacklistedWords = new List<string>(_databaseQuery.LoadBlacklistedWords());
+            TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
             PubSubConnection.PubSubClient.OnFollow += OnFollow;
         }
 
@@ -71,7 +51,7 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
                 return;
             }
             _blacklistedWords.Add(word);
-            File.AppendAllText(_badWordFilePath, word + Environment.NewLine);
+            _databaseQuery.AddBlacklistedItem(word, "word");
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName,"Word successfully blacklisted");
             Log.Information($"[Word Blacklist] {word} has been blacklisted");
         }
@@ -85,12 +65,7 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
                 return;
             }
             _blacklistedWords.Remove(word);
-            File.WriteAllText(_badWordFilePath, String.Empty); //Empty the file to re-write all the words minus the removed
-
-            foreach (var badword in _blacklistedWords)
-            {
-                File.AppendAllText(_badWordFilePath, badword + Environment.NewLine); //Add each word back in except from the removed one
-            }
+            _databaseQuery.RemoveBlacklistedItem(word);
             Log.Information($"[Word Blacklist] {word} has been removed from the blacklist");
         }
 
