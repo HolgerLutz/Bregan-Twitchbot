@@ -6,8 +6,10 @@ using BreganTwitchBot.Discord;
 using BreganTwitchBot.Logging;
 using BreganTwitchBot.TwitchCommands;
 using BreganTwitchBot.TwitchCommands.BigBen;
+using BreganTwitchBot.TwitchCommands.CustomCommands;
 using BreganTwitchBot.TwitchCommands.Giveaway;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using BreganTwitchBot.TwitchCommands.Points;
 using BreganTwitchBot.TwitchCommands.Queue;
 using BreganTwitchBot.TwitchCommands.RandomUser;
 using BreganTwitchBot.TwitchCommands.SongRequests;
@@ -102,6 +104,8 @@ namespace BreganTwitchBot.Connection
                 pubSub.Connect();
             }
 
+
+            
             //Start everything
 
             CommandListener.CommandListenerSetup(); //Commands
@@ -115,7 +119,7 @@ namespace BreganTwitchBot.Connection
             CommandLimiter.SetMessageLimit(); //Set Message Limit
             CommandLimiter.ResetMessageLimit(); //Start message resetter
             Supermod.SupermodSetup(); //Setup supermods
-
+            CustomCommand.CustomCommandsSetup(); //Custom commands
             //Giveaway
             Giveaways.IsGiveawayOn = false;
             Giveaways.TimerAmount = 60000;

@@ -37,19 +37,19 @@ namespace BreganTwitchBot.TwitchCommands
                 case SubscriptionPlan.Tier1:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientUserName} a sub PogChamp <3");
                     _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 15000);
-                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 4000);
                     _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier2:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientDisplayName} a tier 2 sub PogChamp PogChamp <3 <3");
                     _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 30000);
-                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 4000);
                     _messageLimiter.AddMessageCount();
                     break;
                 case SubscriptionPlan.Tier3:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientDisplayName} a tier 3 sub PogChamp PogChamp PogChamp <3 <3 <3");
                     _databaseQuery.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 45000);
-                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientDisplayName, 3000);
+                    _databaseQuery.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 4000);
                     _messageLimiter.AddMessageCount();
                     break;
             }
@@ -122,9 +122,7 @@ namespace BreganTwitchBot.TwitchCommands
         private static void BitsDonated(object sender, OnBitsReceivedArgs e)
         {
             Log.Information($"[PubSub] Just received {e.BitsUsed} bits from {e.Username}. That brings their total to {e.TotalBitsUsed} bits!");
-            var message = $"{e.Username} has donated {e.BitsUsed} bits with a grand total of {e.TotalBitsUsed} donated PogChamp You have gained {e.BitsUsed * 20} points";
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
-            Log.Information($"[Twitch Message Sent] {message}");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Username} has donated {e.BitsUsed} bits with a grand total of {e.TotalBitsUsed} donated PogChamp You have gained {e.BitsUsed * 20} points");
             _databaseQuery.AddUserPoints(e.Username.ToLower(), e.BitsUsed * 20);
             _messageLimiter.AddMessageCount();
         }

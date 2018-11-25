@@ -76,9 +76,7 @@ namespace BreganTwitchBot.TwitchCommands.Gambling
             }
             else
             {
-                var message = $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. No win :(";
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
-                Log.Information($"[Twitch Message Sent] {message}");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. No win :(");
                 messageLimiter.AddMessageCount();
                 databaseQuery.ExecuteQuery($"UPDATE slotMachine SET jackpotAmount = jackpotAmount + {pointsGambled}");
             }

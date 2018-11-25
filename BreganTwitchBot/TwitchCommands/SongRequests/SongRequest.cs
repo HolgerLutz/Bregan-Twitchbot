@@ -23,6 +23,7 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
         public static void SongRequestSetup()
         {
             _databaseQuery = new DatabaseQueries();
+            _commandLimiter = new CommandLimiter();
             _blacklistedSongList = new List<string>(_databaseQuery.LoadBlacklistedSongs());
             Log.Information("[Song Blacklist] Songs successfully loaded");
             DiscordConnection.DiscordClient.ReactionAdded += DiscordClient_ReactionAdded;
@@ -35,7 +36,6 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
             if (_blacklistedSongList.Contains(youtubeId))
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "That song is already on the blacklist");
-                Log.Information($"[Twitch Message Sent] That song is already on the blacklist");
                 _commandLimiter.AddMessageCount();
                 return;
             }
@@ -81,9 +81,7 @@ namespace BreganTwitchBot.TwitchCommands.SongRequests
             {
                 var sinceListSr = DateTime.Now - _databaseQuery.GetLastSongRequest(username);
                 var coolDownLeft = TimeSpan.FromMinutes(srCooldown) - sinceListSr;
-                var message = $"@{username} => You are on cooldown. You can next request a song in {coolDownLeft.Minutes} minutes {coolDownLeft.Seconds} seconds";
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
-                Log.Information($"[Twitch Message Sent] {message}");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{username} => You are on cooldown. You can next request a song in {coolDownLeft.Minutes} minutes {coolDownLeft.Seconds} seconds");
                 _commandLimiter.AddMessageCount();
                 return false;
             }

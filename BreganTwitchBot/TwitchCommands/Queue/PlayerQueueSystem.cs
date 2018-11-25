@@ -10,8 +10,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
     {
         public static int QueueRemoveAmount;
         private static List<string> _playerQueue;
-        //TODO: Move Console logging to BotLogging.cs? 
-        //TODO: Throw exceptions
+
         //Create queue as soon as the bot starts
         public static void QueueCreate()
         {

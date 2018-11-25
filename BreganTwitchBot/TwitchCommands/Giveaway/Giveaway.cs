@@ -85,12 +85,10 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
              if (IsGiveawayOn == false)
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "There is no giveaway running currently");
-                Log.Information("[Twitch Message Sent] There is no giveaway running currently");
                 commandLimiter.AddMessageCount();
                 return;
             }
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{username} => You are already in the giveaway!");
-            Log.Information($"[Twitch Message Sent] @{username} => You are already in the giveaway!");
             commandLimiter.AddMessageCount();
         }
 
@@ -112,9 +110,7 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
             }
             var commandLimiter = new CommandLimiter();
             var winner = _contestents[random.Next(0, _contestents.Count)];
-            var message = $"Congratulations @{winner}! You have won the giveaway PogChamp";
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
-            Log.Information($"[Twitch Message Sent] {message}");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Congratulations @{winner}! You have won the giveaway PogChamp");
             _contestents.Remove(winner);
             commandLimiter.AddMessageCount();
             IsGiveawayOn = false;
@@ -128,10 +124,7 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
                 WinnerWinner();
                 return;
             }
-
-            var message = "There is no giveaway running!";
-            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, message);
-            Log.Information($"[Twitch Message Sent] {message}");
+            TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "There is no giveaway running!");
             commandLimiter.AddMessageCount();
         }
     }

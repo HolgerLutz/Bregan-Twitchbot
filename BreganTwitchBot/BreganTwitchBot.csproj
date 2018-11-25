@@ -19,7 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="1.0.2" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.36.1.1226" />
+    <PackageReference Include="Humanizer.Core" Version="2.5.16" />
     <PackageReference Include="ICanHazDadJoke.NET" Version="1.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="Serilog" Version="2.7.1" />

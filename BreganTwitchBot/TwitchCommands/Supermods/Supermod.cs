@@ -24,7 +24,6 @@ namespace BreganTwitchBot.TwitchCommands.Supermods
             if (_supermodList.Contains(username))
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{commandSender} => {username} is already a supermod!");
-                Log.Information($"[Twitch Message Sent] @{commandSender} => {username} is already a supermod!");
                 commandLimiter.AddMessageCount();
                 return;
             }
@@ -51,7 +50,6 @@ namespace BreganTwitchBot.TwitchCommands.Supermods
             }
 
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{commandSender} => {username} is not a supermod!");
-            Log.Information($"[Twitch Message Sent] @{commandSender} => {username} is not a supermod!");
             commandLimiter.AddMessageCount();
         }
 

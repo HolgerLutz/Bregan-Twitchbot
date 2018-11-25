@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Text;
-using Discord;
 using Microsoft.Data.Sqlite;
 
 namespace BreganTwitchBot.Database
@@ -13,6 +10,12 @@ namespace BreganTwitchBot.Database
         public void ExecuteQuery(string query)
         {
             var sqlCommand = new SqliteCommand(query, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public void OnMinuteUserPoints(string query, SqliteTransaction transaction)
+        {
+            var sqlCommand = new SqliteCommand(query, DatabaseSetup.SqlConnection, transaction);
             sqlCommand.ExecuteNonQuery();
         }
 
@@ -248,6 +251,67 @@ namespace BreganTwitchBot.Database
             var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
 
             sqlCommand.ExecuteNonQuery();
+        }
+
+        public Dictionary<string, Tuple<string, DateTime, long>> LoadCommands()
+        {
+            var commands = new Dictionary<string, Tuple<string, DateTime, long>>();
+            var sqlQuery = "SELECT * FROM commands";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+
+            var reader = sqlCommand.ExecuteReader();
+            while (reader.Read())
+            {
+                commands.Add(reader["commandName"].ToString(), new Tuple<string, DateTime, long>(reader["commandText"].ToString(), Convert.ToDateTime(reader["lastUsed"]), Convert.ToInt64(reader["timesUsed"])));
+            }
+            return commands;
+        }
+
+        public void UpdateDatabaseCommandUsage(string commandName, long commandTimesUsed)
+        {
+            var sqlQuery = $"UPDATE commands SET lastUsed='{DateTime.Now}', timesUsed={commandTimesUsed} WHERE commandName='{commandName}'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public void AddNewCommandDatabase(string commandName, string commandText, DateTime commandLastUsed)
+        {
+            var sqlQuery = $"INSERT INTO commands (commandName, commandText, lastUsed, timesUsed) VALUES ('{commandName}','{commandText}','{commandLastUsed}',0)";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public void DeleteCommandDatabase(string commandName)
+        {
+            var sqlQuery = $"DELETE FROM commands WHERE commandName='{commandName}'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public void EditCommandDatabase(string commandName, string commandText)
+        {
+            var sqlQuery = $"UPDATE commands SET commandText='{DateTime.Now}' WHERE commandName='{commandName}'";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+        }
+
+        public List<string> GetUsersBasedOnTime(long minMinutes, long maxMinutes)
+        {
+            var sqlQuery = $"SELECT * FROM users WHERE minutesInStream BETWEEN {minMinutes} AND {maxMinutes}";
+            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            sqlCommand.ExecuteNonQuery();
+            var reader = sqlCommand.ExecuteReader();
+
+            //Add all the users in list
+            var userList = new List<string>();
+            while (reader.Read())
+            {
+                userList.Add(Convert.ToString(reader["username"]));
+            }
+
+            userList.Sort();
+
+            return userList;
         }
     }
 }
