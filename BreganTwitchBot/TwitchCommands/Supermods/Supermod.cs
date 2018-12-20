@@ -18,13 +18,12 @@ namespace BreganTwitchBot.TwitchCommands.Supermods
             Log.Information("[Supermods] Supermods loaded");
         }
 
-        public void AddSupermod(string username, string commandSender)
+        public static void AddSupermod(string username, string commandSender)
         {
-            var commandLimiter = new CommandLimiter();
             if (_supermodList.Contains(username))
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{commandSender} => {username} is already a supermod!");
-                commandLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 return;
             }
 
@@ -35,9 +34,8 @@ namespace BreganTwitchBot.TwitchCommands.Supermods
             Log.Information($"[Supermods] {username} has been added as a super mod by {commandSender}");
         }
 
-        public void RemoveSupermod(string username, string commandSender)
+        public static void RemoveSupermod(string username, string commandSender)
         {
-            var commandLimiter = new CommandLimiter();
             if (_supermodList.Contains(username))
             {
                 var databaseQuery = new DatabaseQueries();
@@ -45,15 +43,15 @@ namespace BreganTwitchBot.TwitchCommands.Supermods
                 _supermodList.Remove(username);
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{commandSender} => {username} has been removed as a supermod!");
                 Log.Information($"[Supermods] {username} has been removed as a super mod by {commandSender}");
-                commandLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 return;
             }
 
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{commandSender} => {username} is not a supermod!");
-            commandLimiter.AddMessageCount();
+            CommandLimiter.AddMessageCount();
         }
 
-        public bool CheckSupermod(string username)
+        public static bool CheckSupermod(string username)
         {
             return _supermodList.Contains(username);
         }

@@ -26,7 +26,6 @@ namespace BreganTwitchBot.Discord
         {
             var channel = DiscordClient.GetChannel(channelID) as IMessageChannel;
             await channel.SendMessageAsync(message);
-
         }
 
         public static void SendSongMessage(ulong channelID, string message)

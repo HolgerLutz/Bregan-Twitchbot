@@ -9,7 +9,7 @@ namespace BreganTwitchBot.TwitchCommands.FollowAge
 {
     class UserFollowAge
     {
-        public string GetFollowAge(string username)
+        public static string GetFollowAge(string username)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace BreganTwitchBot.TwitchCommands.FollowAge
             }
         }
 
-        public string GetOtherUserFollowAge(string usernameRequester, string username)
+        public static string GetOtherUserFollowAge(string usernameRequester, string username)
         {
             try
             {
@@ -53,8 +53,7 @@ namespace BreganTwitchBot.TwitchCommands.FollowAge
 
                 var followTime = checkFollow.Follows[0].FollowedAt;
                 var followDifference = DateTime.Now - followTime;
-                return
-                    $"@{usernameRequester} => {username} has been following {StartService.ChannelName} for {followDifference.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}";
+                return $"@{usernameRequester} => {username} has been following {StartService.ChannelName} for {followDifference.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}";
             }
 
             catch (AggregateException exception)

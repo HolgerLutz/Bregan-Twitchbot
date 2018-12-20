@@ -21,6 +21,12 @@ namespace BreganTwitchBot.Connection
             Client.Connect();
 
             Client.OnConnected += OnConnectedToChannel;
+            Client.OnDisconnected += OnDisconnectedToChannel;
+        }
+
+        private static void OnDisconnectedToChannel(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+        {
+            Log.Information("[Bot Connection] Bot disconnected from channel");
         }
 
         private static void OnConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)

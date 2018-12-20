@@ -5,7 +5,7 @@ namespace BreganTwitchBot.TwitchCommands.DadJokes
 {
     class DadJoke
     {
-        public async Task<string> DadJokeGenerate()
+        public static async Task<string> DadJokeGenerate()
         {
             //Make dad bot work and return a joke generated
             var libraryName = "ICanHazDadJoke.NET Readme";

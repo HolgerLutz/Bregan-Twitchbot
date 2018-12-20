@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Configuration;
 using System.Threading.Tasks;
 using System.Timers;
@@ -16,7 +16,6 @@ namespace BreganTwitchBot.Discord
             DiscordConnection.DiscordClient.Log += Log;
             DiscordConnection.DiscordClient.UserJoined += UserJoined;
             DiscordConnection.DiscordClient.UserLeft += UserLeft;
-
             var timer = new Timer(20000);
             timer.Start();
             timer.Elapsed += Timer_Elapsed;

@@ -21,12 +21,12 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             Console.ResetColor();
         }
         //Check if user is in queue - don't want to add same person to queue twice
-        public bool QueueUserCheck(string user)
+        public static bool QueueUserCheck(string user)
         {
             return _playerQueue.Contains(user); 
         }
 
-        public void QueueAdd(string user)
+        public static void QueueAdd(string user)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Log.Information($"[Player Queue] {user} has joined the queue");
@@ -34,14 +34,14 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             _playerQueue.Add(user);
         }
 
-        public void QueueRemove(string user)
+        public static void QueueRemove(string user)
         {
             Log.Information($"[Player Queue] {user} has left the queue");
             _playerQueue.Remove(user);
         }
 
         //Remove the set amount of people from the queue (default is 3 as set in QueueCreate)
-        public void QueueRemovePlayersAmount()
+        public static void QueueRemovePlayersAmount()
         {   
             //Wipe the whole list if the count of the queue is lower than the emote
             if (_playerQueue.Count <= QueueRemoveAmount) 
@@ -60,7 +60,7 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             Log.Information($"[Player Queue] The queue has removed {QueueRemoveAmount} people");
         }
 
-        public void QueueClear()
+        public static void QueueClear()
         {
             _playerQueue.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -68,13 +68,13 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             Console.ResetColor();
         }
 
-        public string NextGamePlayers()
+        public static string NextGamePlayers()
         {
 
             //If the queue contains less than 4 players return the current amount
             if (_playerQueue.Count <= QueueRemoveAmount)
             {
-                return String.Join(", ", _playerQueue);
+                return string.Join(", ", _playerQueue);
             }
 
             //If over 4 players in the queue get the first 4
@@ -85,44 +85,38 @@ namespace BreganTwitchBot.TwitchCommands.Queue
             {
                 nextPlayers.Add(_playerQueue[i]);
             }
-            return String.Join(", ", nextPlayers);
+            return string.Join(", ", nextPlayers);
         }
 
-        public string CurrentQueue()
+        public static string CurrentQueue()
         {
-            return String.Join(", ", _playerQueue); //Just show everyone in the queue and splitting them with a comma
+            return string.Join(", ", _playerQueue); //Just show everyone in the queue and splitting them with a comma
         }
 
-        public void SetQueueRemoveAmount(string amount)
+        public static void SetQueueRemoveAmount(string amount)
         {
-            var messageLimiter = new CommandLimiter();
-
             try
             {
                 QueueRemoveAmount = int.Parse(amount);
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The remove amount has been updated to {QueueRemoveAmount}");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 Log.Information($"[Player Queue] The queue remove amount has been set to {QueueRemoveAmount}");
                 Console.ResetColor();
             }
             catch (FormatException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
                 Log.Warning("[Player Queue] A user attempted to break the bot! (Format Exeception)");
-                Console.ResetColor();
             }
             catch (OverflowException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
                 Log.Warning("[Player Queue] A user attempted to break the bot! (Overflow Exeception)");
-                Console.ResetColor();
             }
 
 
         }
 
-        public string GetQueuePosition(string username)
+        public static string GetQueuePosition(string username)
         {
             if (_playerQueue.Contains(username))
             {

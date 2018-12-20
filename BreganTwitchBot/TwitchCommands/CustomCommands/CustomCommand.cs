@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using BreganTwitchBot.Database;
 using Serilog;
 
@@ -12,6 +11,7 @@ namespace BreganTwitchBot.TwitchCommands.CustomCommands
         private static Dictionary<string, Tuple<string, DateTime, long>> _commandsDictionary;
         private static DatabaseQueries _databaseQueries;
         private static string[] _blacklistedCommandNames;
+
         public static void CustomCommandsSetup()
         {
             _databaseQueries = new DatabaseQueries();
@@ -35,6 +35,7 @@ namespace BreganTwitchBot.TwitchCommands.CustomCommands
             }
 
             UpdateCommandUsage(commandName);
+
             string command = _commandsDictionary[commandName].Item1;
 
             //Counters
@@ -49,6 +50,11 @@ namespace BreganTwitchBot.TwitchCommands.CustomCommands
                 command = command.Replace("[user]", username);
             }
 
+            //Single quotes 
+            if (_commandsDictionary[commandName].Item1.Contains("''"))
+            {
+                command = command.Replace("''", "'");
+            }
             return command;
 
         }
@@ -68,6 +74,14 @@ namespace BreganTwitchBot.TwitchCommands.CustomCommands
             if (_commandsDictionary.ContainsKey(commandName) || _blacklistedCommandNames.Contains(commandName))
             {
                 return false;
+            }
+
+            if (commandText.Contains("'"))
+            {
+                var updatedCommandText = commandText.Replace("'", "''");
+                _commandsDictionary.Add(commandName, new Tuple<string, DateTime, long>(updatedCommandText, DateTime.Now - TimeSpan.FromSeconds(5), 0));
+                _databaseQueries.AddNewCommandDatabase(commandName, updatedCommandText, DateTime.Now - TimeSpan.FromSeconds(5));
+                return true;
             }
             _commandsDictionary.Add(commandName, new Tuple<string, DateTime, long>(commandText, DateTime.Now - TimeSpan.FromSeconds(5), 0));
             _databaseQueries.AddNewCommandDatabase(commandName, commandText, DateTime.Now - TimeSpan.FromSeconds(5));

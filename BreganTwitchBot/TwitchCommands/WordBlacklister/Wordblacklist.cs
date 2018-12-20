@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Database;
@@ -15,11 +12,9 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
     {
         private static List<string> _blacklistedWords;
         private static DatabaseQueries _databaseQuery;
-        private static CommandLimiter _commandLimiter;
 
         public static void StartBlacklist() //TODO: Throw exceptions if the files are missing but the config file exists
         {
-            _commandLimiter = new CommandLimiter();
             _databaseQuery = new DatabaseQueries();
 
             _blacklistedWords = new List<string>(_databaseQuery.LoadBlacklistedWords());
@@ -35,6 +30,7 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
                 if (e.DisplayName.Replace("_", "").ToLower().Contains(badWord))
                 {
                     TwitchBotConnection.Client.BanUser(StartService.ChannelName, e.Username, "offensive name");
+                    CommandLimiter.AddMessageCount();
                     Log.Information($"[Word Blacklist] {e.DisplayName} has been banned for having an offensive name");
                     return;
                 }
@@ -42,12 +38,12 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
         }
 
         //Bad words
-        public void AddBadWord(string word)
+        public static void AddBadWord(string word)
         {
             if (_blacklistedWords.Contains(word))
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName,"That word is already on the blacklist");
-                _commandLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 return;
             }
             _blacklistedWords.Add(word);
@@ -56,12 +52,12 @@ namespace BreganTwitchBot.TwitchCommands.WordBlacklister
             Log.Information($"[Word Blacklist] {word} has been blacklisted");
         }
 
-        public void RemoveBadWord(string word)
+        public static void RemoveBadWord(string word)
         {
             if (!_blacklistedWords.Contains(word))
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "That word is not blacklisted");
-                _commandLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 return;
             }
             _blacklistedWords.Remove(word);

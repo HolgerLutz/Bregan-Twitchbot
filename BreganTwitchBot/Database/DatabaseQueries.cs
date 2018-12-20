@@ -9,73 +9,124 @@ namespace BreganTwitchBot.Database
     {
         public void ExecuteQuery(string query)
         {
-            var sqlCommand = new SqliteCommand(query, DatabaseSetup.SqlConnection);
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+            var sqlCommand = new SqliteCommand(query, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+            sqlCommand.Dispose();
+            sqlConnection.Close();
         }
 
-        public void OnMinuteUserPoints(string query, SqliteTransaction transaction)
+        public void OnMinuteUserPoints(string query, SqliteTransaction transaction, SqliteConnection connection)
         {
-            var sqlCommand = new SqliteCommand(query, DatabaseSetup.SqlConnection, transaction);
+            var sqlCommand = new SqliteCommand(query, connection, transaction);
             sqlCommand.ExecuteNonQuery();
+            sqlCommand.Dispose();
         }
 
         public long GetUserPoints(string username)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"SELECT points FROM users WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
             reader.Read();
 
             if (reader["points"] == DBNull.Value)
             {
+                sqlCommand.Dispose();
+                reader.Dispose();
+                sqlConnection.Dispose();
                 return 0;
             }
+            var points = (long) reader["points"];
 
-            return (long) reader["points"];
+            sqlCommand.Dispose();
+            reader.Dispose();
+            sqlConnection.Dispose();
+            return points;
         }
 
         public TimeSpan GetUserTime(string username)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"SELECT minutesInStream FROM users WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
             reader.Read();
 
-            if (reader["minutesInStream"] == DBNull.Value) //Incase the user is new and has not been registered yet
+            if (reader["minutesInStream"] == DBNull.Value) //In case the user is new and has not been registered yet
             {
+                sqlCommand.Dispose();
+                reader.Dispose();
+                sqlConnection.Dispose();
                 return TimeSpan.FromMinutes(0);
             }
 
             var minutes = (long) reader["minutesInStream"];
+
+            sqlCommand.Dispose();
+            reader.Dispose();
+            sqlConnection.Dispose();
+
             return TimeSpan.FromMinutes(minutes);
         }
 
         public long GetJackpotAmount()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = "SELECT jackpotAmount FROM slotMachine";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
             reader.Read();
-            return (long) reader["jackpotAmount"];
+
+            var result = (long) reader["jackpotAmount"];
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
+            return result;
+
         }
 
         public bool HasEnoughPoints(string username, long points)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"SELECT points FROM users WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
             reader.Read();
 
             if (reader["points"] == DBNull.Value)
             {
+                reader.Dispose();
+                sqlConnection.Dispose();
+                sqlCommand.Dispose();
                 return false;
             }
 
-            return (long) reader["points"] >= points;
+            var pointsCheck = (long) reader["points"] >= points;
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
+
+            return pointsCheck;
         }
 
         public void RemoveUserPoints(string username, long pointsToRemove)
@@ -95,27 +146,43 @@ namespace BreganTwitchBot.Database
 
         public DateTime GetLastSongRequest(string username)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"SELECT lastSongRequest FROM users WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
             reader.Read();
             var time = reader["lastSongRequest"];
 
             if (time == DBNull.Value)
             {
+                reader.Dispose();
+                sqlConnection.Dispose();
+                sqlCommand.Dispose();
                 return DateTime.Now.AddMinutes(-10);
             }
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return Convert.ToDateTime(time);
         }
 
         public string GetTopPoints()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
             var pointsList = new List<long>();
+
             var sqlQuery = "SELECT username, points FROM users ORDER BY points DESC limit 5";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
 
             while (reader.Read())
@@ -123,6 +190,10 @@ namespace BreganTwitchBot.Database
                 userList.Add(reader["username"].ToString());
                 pointsList.Add((long)reader["points"]);
             }
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
 
             var usersAndPointsSb = new StringBuilder();
 
@@ -138,11 +209,16 @@ namespace BreganTwitchBot.Database
 
         public string GetTopHours()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
             var hoursList = new List<long>();
+
             var sqlQuery = "SELECT username, minutesInStream FROM users ORDER BY minutesInStream DESC limit 5";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
 
             while (reader.Read())
@@ -150,6 +226,10 @@ namespace BreganTwitchBot.Database
                 userList.Add(reader["username"].ToString());
                 hoursList.Add((long)reader["minutesInStream"]);
             }
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
 
             var usersAndHoursSb = new StringBuilder();
 
@@ -165,38 +245,62 @@ namespace BreganTwitchBot.Database
 
         public List<string> GetSuperMods()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
+
             var sqlQuery = "SELECT username FROM users WHERE isSuperMod=1";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
 
             while (reader.Read())
             {
                 userList.Add(reader["username"].ToString());
             }
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return userList;
         }
 
         public void AddSuperMod(string username)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"UPDATE users SET isSuperMod=1 WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
+            sqlCommand.Dispose();
+            sqlConnection.Dispose();
         }
 
         public void RemoveSuperMod(string username)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"UPDATE users SET isSuperMod=0 WHERE username='{username}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
+            sqlCommand.Dispose();
+            sqlConnection.Dispose();
         }
 
         public List<string> LoadBlockedBots()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
             var sqlQuery = "SELECT word FROM blacklist WHERE type='bot'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
 
             var reader = sqlCommand.ExecuteReader();
             while (reader.Read())
@@ -204,14 +308,20 @@ namespace BreganTwitchBot.Database
                 userList.Add(reader["word"].ToString());
             }
 
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return userList;
         }
 
         public List<string> LoadBlacklistedSongs()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
             var sqlQuery = "SELECT word FROM blacklist WHERE type='song'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
 
             var reader = sqlCommand.ExecuteReader();
             while (reader.Read())
@@ -219,14 +329,20 @@ namespace BreganTwitchBot.Database
                 userList.Add(reader["word"].ToString());
             }
 
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return userList;
         }
 
         public List<string> LoadBlacklistedWords()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var userList = new List<string>();
             var sqlQuery = "SELECT word FROM blacklist WHERE type='word'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
 
             var reader = sqlCommand.ExecuteReader();
             while (reader.Read())
@@ -234,72 +350,74 @@ namespace BreganTwitchBot.Database
                 userList.Add(reader["word"].ToString());
             }
 
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return userList;
         }
 
         public void AddBlacklistedItem(string item, string itemType)
         {
-            var sqlQuery = $"INSERT INTO blacklist (word, type) VALUES ('{item}','{itemType}')";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-
-            sqlCommand.ExecuteNonQuery();
+            ExecuteQuery($"INSERT INTO blacklist (word, type) VALUES ('{item}','{itemType}')");
         }
 
         public void RemoveBlacklistedItem(string item)
         {
-            var sqlQuery = $"DELETE FROM blacklist WHERE word='{item}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            ExecuteQuery($"DELETE FROM blacklist WHERE word='{item}'");
 
-            sqlCommand.ExecuteNonQuery();
         }
 
         public Dictionary<string, Tuple<string, DateTime, long>> LoadCommands()
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var commands = new Dictionary<string, Tuple<string, DateTime, long>>();
+
             var sqlQuery = "SELECT * FROM commands";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
 
             var reader = sqlCommand.ExecuteReader();
             while (reader.Read())
             {
                 commands.Add(reader["commandName"].ToString(), new Tuple<string, DateTime, long>(reader["commandText"].ToString(), Convert.ToDateTime(reader["lastUsed"]), Convert.ToInt64(reader["timesUsed"])));
             }
+
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return commands;
         }
 
         public void UpdateDatabaseCommandUsage(string commandName, long commandTimesUsed)
         {
-            var sqlQuery = $"UPDATE commands SET lastUsed='{DateTime.Now}', timesUsed={commandTimesUsed} WHERE commandName='{commandName}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-            sqlCommand.ExecuteNonQuery();
+            ExecuteQuery($"UPDATE commands SET lastUsed='{DateTime.Now}', timesUsed={commandTimesUsed} WHERE commandName='{commandName}'");
         }
 
         public void AddNewCommandDatabase(string commandName, string commandText, DateTime commandLastUsed)
         {
-            var sqlQuery = $"INSERT INTO commands (commandName, commandText, lastUsed, timesUsed) VALUES ('{commandName}','{commandText}','{commandLastUsed}',0)";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-            sqlCommand.ExecuteNonQuery();
+            ExecuteQuery($"INSERT INTO commands (commandName, commandText, lastUsed, timesUsed) VALUES ('{commandName}','{commandText}','{commandLastUsed}',0)");
         }
 
         public void DeleteCommandDatabase(string commandName)
         {
-            var sqlQuery = $"DELETE FROM commands WHERE commandName='{commandName}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-            sqlCommand.ExecuteNonQuery();
+            ExecuteQuery("DELETE FROM commands WHERE commandName='{commandName}'");
         }
 
         public void EditCommandDatabase(string commandName, string commandText)
         {
-            var sqlQuery = $"UPDATE commands SET commandText='{DateTime.Now}' WHERE commandName='{commandName}'";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
-            sqlCommand.ExecuteNonQuery();
+            ExecuteQuery($"UPDATE commands SET commandText='{commandText}' WHERE commandName='{commandName}'");
         }
 
         public List<string> GetUsersBasedOnTime(long minMinutes, long maxMinutes)
         {
+            var sqlConnection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
+            sqlConnection.Open();
+
             var sqlQuery = $"SELECT * FROM users WHERE minutesInStream BETWEEN {minMinutes} AND {maxMinutes}";
-            var sqlCommand = new SqliteCommand(sqlQuery, DatabaseSetup.SqlConnection);
+            var sqlCommand = new SqliteCommand(sqlQuery, sqlConnection);
             sqlCommand.ExecuteNonQuery();
+
             var reader = sqlCommand.ExecuteReader();
 
             //Add all the users in list
@@ -311,6 +429,9 @@ namespace BreganTwitchBot.Database
 
             userList.Sort();
 
+            reader.Dispose();
+            sqlConnection.Dispose();
+            sqlCommand.Dispose();
             return userList;
         }
     }

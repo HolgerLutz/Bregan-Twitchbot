@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Database;
 using BreganTwitchBot.TwitchCommands.CustomCommands;
@@ -13,6 +14,8 @@ using BreganTwitchBot.TwitchCommands.SongRequests;
 using BreganTwitchBot.TwitchCommands.Supermods;
 using BreganTwitchBot.TwitchCommands.WordBlacklister;
 using BreganTwitchBot.TwitchCommands._8Ball;
+using Humanizer;
+using Humanizer.Localisation;
 using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands
@@ -21,37 +24,24 @@ namespace BreganTwitchBot.TwitchCommands
     {
         private static DateTime _gambleCooldown;
         private static DateTime _howLongCooldown;
+        private static DateTime _uptimeCooldown;
         private static bool _srToggle;
-        private static Giveaways _giveaway;
-        private static PlayerQueueSystem _queue;
-        private static WordBlackList _wordBlacklist;
-        private static CommandLimiter _messageLimiter;
         private static DatabaseQueries _databaseQuery;
-        private static SongRequest _songRequest;
-        private static Supermod _supermod;
         private static CustomCommand _customCommand;
-        private static UserFollowAge _followAge;
 
         public static void CommandListenerSetup()
         {
             TwitchBotConnection.Client.OnChatCommandReceived += Commands;
             TwitchBotConnection.Client.OnMessageReceived += ChatMessage;
             _srToggle = false;
-            _giveaway = new Giveaways();
-            _queue = new PlayerQueueSystem();
-            _wordBlacklist = new WordBlackList();
-            _messageLimiter = new CommandLimiter();
             _databaseQuery = new DatabaseQueries();
-            _songRequest = new SongRequest();
-            _supermod = new Supermod();
             _customCommand = new CustomCommand();
-            _followAge = new UserFollowAge();
         }
 
         private static void ChatMessage(object sender, TwitchLib.Client.Events.OnMessageReceivedArgs e)
         {
             //Chat messages for commands that may not start with "!"
-            if (_messageLimiter.CheckMessageLimit())
+            if (CommandLimiter.CheckMessageLimit())
             {
                 Log.Warning("[Message Limiter] Message Limit Hit");
                 return;
@@ -66,7 +56,7 @@ namespace BreganTwitchBot.TwitchCommands
             }
 
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, command);
-            _messageLimiter.AddMessageCount();
+            CommandLimiter.AddMessageCount();
         }
 
         private static void Commands(object sender, TwitchLib.Client.Events.OnChatCommandReceivedArgs e)
@@ -74,7 +64,7 @@ namespace BreganTwitchBot.TwitchCommands
             //Giveaways & the player queue have multiple commands. To prevent errors it is defined before the switch statement
 
             //Message limit checker
-            if (_messageLimiter.CheckMessageLimit())
+            if (CommandLimiter.CheckMessageLimit())
             {
                 Log.Warning("[Message Limiter] Message Limit Hit");
                 return;
@@ -86,7 +76,7 @@ namespace BreganTwitchBot.TwitchCommands
             if (command != null)
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, command);
-                _messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 return;
             }
 
@@ -94,26 +84,51 @@ namespace BreganTwitchBot.TwitchCommands
             switch (e.Command.CommandText.ToLower())
             {
                 case "8ball":
-                    var eightBall = new EightBall();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, eightBall.Ask8Ball());
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, EightBall.Ask8Ball());
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "dadjoke":
-                    var dadJoke = new DadJoke();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, dadJoke.DadJokeGenerate().Result);
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, DadJoke.DadJokeGenerate().Result);
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "commands":
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => You can find the commands at https://github.com/Bregann/Bregan-Twitchbot#bregan-twitchbot");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "pitchfork":
-                    var randomUser = new RandomUsers();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} just pitchforked -------E {randomUser.SelectRandomUser()}");
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} just pitchforked -------E {RandomUsers.SelectRandomUser()}");
+                    CommandLimiter.AddMessageCount();
+                    break;
+
+                case "uptime":
+
+                    if (DateTime.Now - TimeSpan.FromSeconds(2) <= _uptimeCooldown)
+                    {
+                        return;
+                    }
+
+                    var uptime = TwitchApiConnection.ApiClient.V5.Streams.GetUptimeAsync(StartService.TwitchChannelID).Result;
+
+                    if (uptime == null)
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{StartService.ChannelName} is not live :(");
+                        _uptimeCooldown = DateTime.Now;
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+                    //{uptime.Value.Hours} {(uptime.Value.Hours == 1 ? "hour" : "hours")}, {uptime.Value.Minutes} {(uptime.Value.Minutes == 1 ? "minute" : "minutes")}, {uptime.Value.Seconds} {(uptime.Value.Minutes == 1 ? "second" : "seconds")}
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Sadly {StartService.ChannelName} has been streaming for {uptime.Value.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}");
+                    CommandLimiter.AddMessageCount();
+                    _uptimeCooldown = DateTime.Now;
+                    break;
+
+                case "botuptime":
+                    var botUptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The bot has been up for {botUptime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "shoutout" when e.Command.ChatMessage.IsModerator:
@@ -121,7 +136,7 @@ namespace BreganTwitchBot.TwitchCommands
                 case "so" when e.Command.ChatMessage.IsModerator:
                 case "so" when e.Command.ChatMessage.IsBroadcaster:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"Hey go check out {e.Command.ArgumentsAsString.Replace("@", "")} at twitch.tv/{e.Command.ArgumentsAsString.Replace("@", "").Trim()} for some great content!");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "howlong":
@@ -133,90 +148,106 @@ namespace BreganTwitchBot.TwitchCommands
 
                     if (e.Command.ChatMessage.Message.ToLower() == "!howlong")
                     {
-                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, _followAge.GetFollowAge(e.Command.ChatMessage.Username));
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, UserFollowAge.GetFollowAge(e.Command.ChatMessage.Username));
                         _howLongCooldown = DateTime.Now;
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, _followAge.GetOtherUserFollowAge(e.Command.ChatMessage.Username, e.Command.ArgumentsAsList[0]));
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, UserFollowAge.GetOtherUserFollowAge(e.Command.ChatMessage.Username, e.Command.ArgumentsAsList[0]));
                     _howLongCooldown = DateTime.Now;
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
                 //Giveaway commands
                 case "startgiveaway" when e.Command.ChatMessage.IsModerator:
                 case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
-                    _giveaway.StartGiveaway();
+                    Giveaways.StartGiveaway();
                     break;
 
                 case "joingiveaway":
-                    _giveaway.AddContestant(e.Command.ChatMessage.Username);
+                    Giveaways.AddContestant(e.Command.ChatMessage.Username);
                     break;
 
                 case "amountentered" when e.Command.ChatMessage.IsModerator:
                 case "amountentered" when e.Command.ChatMessage.IsBroadcaster:
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{_giveaway.AmountOfContestantsEntered()}");
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaways.AmountOfContestantsEntered()}");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "setgiveawaytime" when e.Command.ChatMessage.IsModerator:
                 case "setgiveawaytime" when e.Command.ChatMessage.IsBroadcaster:
-                    _giveaway.SetTimerAmount(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username);
+                    Giveaways.SetTimerAmount(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username);
                     break;
 
                 case "reroll" when e.Command.ChatMessage.IsModerator:
                 case "reroll" when e.Command.ChatMessage.IsBroadcaster:
-                    _giveaway.ReRoll();
+                    Giveaways.ReRoll();
                     break;
 
                 //Queue Commands
-                case "joinqueue" when _queue.QueueUserCheck(e.Command.ChatMessage.Username) == false:
-                    _queue.QueueAdd(e.Command.ChatMessage.Username);
+                case "joinqueue" when PlayerQueueSystem.QueueUserCheck(e.Command.ChatMessage.Username) == false:
+                    PlayerQueueSystem.QueueAdd(e.Command.ChatMessage.Username);
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username}: You have been added to the queue!");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "leavequeue":
-                    _queue.QueueRemove(e.Command.ChatMessage.Username);
+                    PlayerQueueSystem.QueueRemove(e.Command.ChatMessage.Username);
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username}: You have been removed from the queue!");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "queue":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current queue is {_queue.CurrentQueue()}");
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current queue is {PlayerQueueSystem.CurrentQueue()}");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "nextgame":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {_queue.NextGamePlayers()}");
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The next players for the game are {PlayerQueueSystem.NextGamePlayers()}");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "queueposition":
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, _queue.GetQueuePosition(e.Command.ChatMessage.Username));
-                    _messageLimiter.AddMessageCount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, PlayerQueueSystem.GetQueuePosition(e.Command.ChatMessage.Username));
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "removegame" when e.Command.ChatMessage.IsModerator:
                 case "removegame" when e.Command.ChatMessage.IsBroadcaster:
-                    _queue.QueueRemovePlayersAmount();
-                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username}: the current players have been removed");
-                    _messageLimiter.AddMessageCount();
+                    PlayerQueueSystem.QueueRemovePlayersAmount();
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => the current players have been removed");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "clearqueue" when e.Command.ChatMessage.IsModerator:
                 case "clearqueue" when e.Command.ChatMessage.IsBroadcaster:
-                    _queue.QueueClear();
+                    PlayerQueueSystem.QueueClear();
                     break;
 
                 case "setremoveamount" when e.Command.ChatMessage.IsModerator:
                 case "setremoveamount" when e.Command.ChatMessage.IsBroadcaster:
-                    _queue.SetQueueRemoveAmount(e.Command.ArgumentsAsString);
+                    PlayerQueueSystem.SetQueueRemoveAmount(e.Command.ArgumentsAsString);
                     break;
 
                 //Bad word filter
                 case "addbadword" when e.Command.ChatMessage.IsModerator:
-                    _wordBlacklist.AddBadWord(e.Command.ArgumentsAsString);
+                    if (e.Command.ChatMessage.Message.ToLower() == "!addbadword")
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage for this command is !addbadword <word>");
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+                    WordBlackList.AddBadWord(e.Command.ArgumentsAsString);
                     break;
 
                 case "removebadword" when e.Command.ChatMessage.IsModerator:
-                    _wordBlacklist.RemoveBadWord(e.Command.ArgumentsAsString);
+                    if (e.Command.ChatMessage.Message.ToLower() == "!removebadword")
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage for this command is !removebadword <word>");
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+                    WordBlackList.RemoveBadWord(e.Command.ArgumentsAsString.ToLower());
                     break;
 
                     //Points/time
@@ -228,7 +259,7 @@ namespace BreganTwitchBot.TwitchCommands
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => {e.Command.ArgumentsAsString.Replace("@", "")} has {_databaseQuery.GetUserPoints(e.Command.ArgumentsAsString.ToLower().Replace("@", "")):N0} points");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "hours":
@@ -237,26 +268,26 @@ namespace BreganTwitchBot.TwitchCommands
                     {
                         var time = _databaseQuery.GetUserTime(e.Command.ChatMessage.Username);
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} => You have {time.TotalMinutes} minutes (about {Math.Round(time.TotalMinutes / 60, 2)} hours) in the stream");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
                     
                     var otherUserTime = _databaseQuery.GetUserTime(e.Command.ArgumentsAsString.Replace("@","").ToLower());
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} => {e.Command.ArgumentsAsString.Replace("@", "")} has {otherUserTime.TotalMinutes} minutes (about {Math.Round(otherUserTime.TotalMinutes / 60, 2)} hours) in the stream");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 //Leaderboards for points/hours
                 case "pointslb":
                     var points = _databaseQuery.GetTopPoints();
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, points);
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "hourslb":
                     var hours = _databaseQuery.GetTopHours();
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, hours);
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 //Gamble
@@ -280,7 +311,7 @@ namespace BreganTwitchBot.TwitchCommands
                         if (userPointAmount < 100)
                         {
                             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "It's 100 points minimum!");
-                            _messageLimiter.AddMessageCount();
+                            CommandLimiter.AddMessageCount();
                             break;
                         }
                         var slotMachine = new SlotMachine();
@@ -304,18 +335,18 @@ namespace BreganTwitchBot.TwitchCommands
                     else if(intConvert && pointsBeingGambled <= 100) //Minimum on the points to stop abuse
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "It's 100 points minimum!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
                     else if (_databaseQuery.HasEnoughPoints(e.Command.ChatMessage.Username, pointsBeingGambled) == false) //Check if they don't have enough points
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "You don't have enough points! Check with !points how many you have");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "Hey try using !spin <points> or !spin all");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "flip":
@@ -330,37 +361,38 @@ namespace BreganTwitchBot.TwitchCommands
                     if (gambledPointsResult == 0 || gambledPointsResult < 500)
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => It's 500 points minimum!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     if (_databaseQuery.HasEnoughPoints(e.Command.ChatMessage.Username, gambledPointsResult) == false)
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => You don't have enough points!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     var random = new Random().Next(1,101);
-                    if (random > 60)
+                    if (random > 50)
                     {
                         var pointsWon = (long) Math.Round(gambledPointsResult * 1.5);
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username}=> You flipped heads and won! You have won {pointsWon:N0} points");
                         _databaseQuery.AddUserPoints(e.Command.ChatMessage.Username, pointsWon);
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         _gambleCooldown = DateTime.Now;
                         break;
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username}=> You flipped tails and lost :( You have lost {gambledPointsResult:N0} points");
                     _databaseQuery.RemoveUserPoints(e.Command.ChatMessage.Username, gambledPointsResult);
-                    _messageLimiter.AddMessageCount();
+                    _databaseQuery.ExecuteQuery($"UPDATE slotMachine SET jackpotAmount = jackpotAmount + {gambledPointsResult}");
+                    CommandLimiter.AddMessageCount();
                     _gambleCooldown = DateTime.Now;
                     break;
 
                 case "jackpot":
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"The current jackpot is {_databaseQuery.GetJackpotAmount():N0} points");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 //Song requests
@@ -376,10 +408,10 @@ namespace BreganTwitchBot.TwitchCommands
                         break;
                     }
 
-                    //Find out how much the SR is. Supermods get free song requests as they are trusted
-                    if (_supermod.CheckSupermod(e.Command.ChatMessage.Username))
+                    //Find out how much the SR is. Supermodss get free song requests as they are trusted
+                    if (Supermod.CheckSupermod(e.Command.ChatMessage.Username))
                     {
-                        _songRequest.SendSong(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username, 0);
+                        SongRequest.SendSong(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username, 0);
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => Your song has been sent");
                         _databaseQuery.UpdateLastSongRequest(e.Command.ChatMessage.Username);
                         break;
@@ -398,7 +430,7 @@ namespace BreganTwitchBot.TwitchCommands
                     if (_databaseQuery.HasEnoughPoints(e.Command.ChatMessage.Username, srCost) == false)
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} => You need {srCost:N0} points for a song request!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
@@ -406,36 +438,36 @@ namespace BreganTwitchBot.TwitchCommands
                     if (e.Command.ChatMessage.Message.ToLower().Contains("youtube") || e.Command.ChatMessage.Message.ToLower().Contains("youtu.be"))
                     {
 
-                        if (_songRequest.IsSongBlacklisted(e.Command.ArgumentsAsString))
+                        if (SongRequest.IsSongBlacklisted(e.Command.ArgumentsAsString))
                         {
                             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The song you have requested is blacklisted");
-                            _messageLimiter.AddMessageCount();
+                            CommandLimiter.AddMessageCount();
                             break;
                         }
 
                         //If they are on cooldown the message will be sent in the CheckCooldown method
-                        if (_songRequest.CheckCooldown(e.Command.ChatMessage.Username, srCooldown) == false)
+                        if (SongRequest.CheckCooldown(e.Command.ChatMessage.Username, srCooldown) == false)
                         {
                             break;
                         }
 
-                        if (_songRequest.CheckCooldown(e.Command.ChatMessage.Username, srCooldown))
+                        if (SongRequest.CheckCooldown(e.Command.ChatMessage.Username, srCooldown))
                         {
-                            _songRequest.SendSong(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username, srCost);
+                            SongRequest.SendSong(e.Command.ArgumentsAsString, e.Command.ChatMessage.Username, srCost);
                             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => Your song has been sent");
                             _databaseQuery.UpdateLastSongRequest(e.Command.ChatMessage.Username);
-                            _messageLimiter.AddMessageCount();
+                            CommandLimiter.AddMessageCount();
                             break;
                         }
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{e.Command.ChatMessage.Username} => You need to put in a YouTube link for a song request!");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
-                case "togglesr" when _supermod.CheckSupermod(e.Command.ChatMessage.Username):
+                case "togglesr" when Supermod.CheckSupermod(e.Command.ChatMessage.Username):
                 case "togglesr" when e.Command.ChatMessage.IsBroadcaster:
-                case "srtoggle" when _supermod.CheckSupermod(e.Command.ChatMessage.Username):
+                case "srtoggle" when Supermod.CheckSupermod(e.Command.ChatMessage.Username):
                 case "srtoggle" when e.Command.ChatMessage.IsBroadcaster:
 
                     _srToggle = !_srToggle;
@@ -443,25 +475,25 @@ namespace BreganTwitchBot.TwitchCommands
                     if (_srToggle)
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => Song requests have been disabled");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                     }
                     else
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => Song requests have been enabled");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                     }
 
                     break;
                 case "blacklistsong" when e.Command.ChatMessage.IsModerator:
-                    _songRequest.AddBlacklistedSong(e.Command.ArgumentsAsString);
+                    SongRequest.AddBlacklistedSong(e.Command.ArgumentsAsString);
                     break;
 
-                case "addpoints" when _supermod.CheckSupermod(e.Command.ChatMessage.Username):
+                case "addpoints" when Supermod.CheckSupermod(e.Command.ChatMessage.Username):
                 case "addpoints" when e.Command.ChatMessage.IsBroadcaster:
                     if (e.Command.ChatMessage.Message.ToLower() == "!addpoints")
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage of this command is !addpoints <username> <points>");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
@@ -472,20 +504,20 @@ namespace BreganTwitchBot.TwitchCommands
                     if (pointsToAdd == 0)
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage of this command is !addpoints <username> <points>");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                     }
 
                     _databaseQuery.AddUserPoints(usernameForPoints, pointsToAdd);
                     break;
 
                 //Supermods
-                case "addsupermod" when _supermod.CheckSupermod(e.Command.ChatMessage.Username):
+                case "addsupermod" when Supermod.CheckSupermod(e.Command.ChatMessage.Username):
                 case "addsupermod" when e.Command.ChatMessage.Username == e.Command.ChatMessage.BotUsername:
-                    _supermod.AddSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
+                    Supermod.AddSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
                     break;
                 case "removesupermod" when e.Command.ChatMessage.IsBroadcaster:
                 case "removesupermod" when e.Command.ChatMessage.Username == e.Command.ChatMessage.BotUsername:
-                    _supermod.RemoveSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
+                    Supermod.RemoveSupermod(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
                     break;
 
                 //Custom commands
@@ -505,7 +537,7 @@ namespace BreganTwitchBot.TwitchCommands
                     if (e.Command.ChatMessage.Message.StartsWith("!addcmd !addcmd") || e.Command.ChatMessage.Message.StartsWith("!cmdadd !cmdadd"))
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => You cannot add the add command as a command!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
@@ -515,19 +547,19 @@ namespace BreganTwitchBot.TwitchCommands
                     if (commandText == "")
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => You need to add command text!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     if (_customCommand.AddNewCommand(commandName[0].ToLower(), commandText))
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => {commandName[0].ToLower()} has been successfully added!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $@"{e.Command.ChatMessage.Username} => That command already exists!");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 case "delcmd" when e.Command.ChatMessage.IsBroadcaster:
@@ -539,7 +571,7 @@ namespace BreganTwitchBot.TwitchCommands
                     if (e.Command.ChatMessage.Message == "!delcmd" || e.Command.ChatMessage.Message == "!cmddel")
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage for this command is !delcmd <command name>");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
@@ -561,7 +593,7 @@ namespace BreganTwitchBot.TwitchCommands
                     if (e.Command.ChatMessage.Message == "!editcmd" || e.Command.ChatMessage.Message == "!cmdedit")
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage for this command is !editcmd <command name> <command text>");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
@@ -571,19 +603,19 @@ namespace BreganTwitchBot.TwitchCommands
                     if (commandTextToEdit == "")
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => You need to supply some command text!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     if (!_customCommand.EditCommand(commandNameToEdit[0], commandTextToEdit))
                     {
                         TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => That command does not exist!");
-                        _messageLimiter.AddMessageCount();
+                        CommandLimiter.AddMessageCount();
                         break;
                     }
 
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The command {commandNameToEdit[0]} has been edited!");
-                    _messageLimiter.AddMessageCount();
+                    CommandLimiter.AddMessageCount();
                     break;
             }
         }

@@ -5,6 +5,7 @@ using System.Timers;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.Database;
 using BreganTwitchBot.Discord;
+using Microsoft.Data.Sqlite;
 using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands.Points
@@ -35,8 +36,10 @@ namespace BreganTwitchBot.TwitchCommands.Points
                     return;
                 }
 
+                var connection = new SqliteConnection(DatabaseSetup.SqlConnectionString);
                 var databaseQuery = new DatabaseQueries();
-                var transaction = DatabaseSetup.SqlConnection.BeginTransaction();
+                connection.Open();
+                var transaction = connection.BeginTransaction();
 
                 var userList = TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync(StartService.ChannelName).Result;
 
@@ -46,17 +49,17 @@ namespace BreganTwitchBot.TwitchCommands.Points
                     {
                         continue;
                     }
-
-                    databaseQuery.OnMinuteUserPoints($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)", transaction);
-                    databaseQuery.OnMinuteUserPoints($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 10 WHERE username='{user.Username}'", transaction);
+                    databaseQuery.OnMinuteUserPoints($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)", transaction, connection);
+                    databaseQuery.OnMinuteUserPoints($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 20 WHERE username='{user.Username}'", transaction, connection);
                     Log.Information($"[Database] User {user.Username} updated");
                 }
-
                 transaction.Commit();
+                transaction.Dispose();
+                connection.Close();
             }
             catch (Exception exception)
             {
-                Log.Fatal(exception.Message);
+                Log.Fatal($"[Time Tracker] {exception.Message}");
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Timers;
+﻿using System.Timers;
 using BreganTwitchBot.Connection;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
@@ -51,12 +50,12 @@ namespace BreganTwitchBot.TwitchCommands.MessageLimiter
             MessagesSent = 0;
         }
 
-        public void AddMessageCount()
+        public static void AddMessageCount()
         {
             MessagesSent += 1;
         }
 
-        public bool CheckMessageLimit()
+        public static bool CheckMessageLimit()
         {
             return MessagesSent >= MessageLimit;
         }

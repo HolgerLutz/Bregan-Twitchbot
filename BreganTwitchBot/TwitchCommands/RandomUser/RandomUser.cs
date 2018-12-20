@@ -57,7 +57,7 @@ namespace BreganTwitchBot.TwitchCommands.RandomUser
             }
         }
 
-        public string SelectRandomUser()
+        public static string SelectRandomUser()
         {
             var random = new Random();
             var number = random.Next(0, _userList.Count);

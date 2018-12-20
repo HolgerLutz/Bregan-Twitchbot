@@ -1,5 +1,4 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Threading;
 using BreganTwitchBot.Database;
 using BreganTwitchBot.Discord;
@@ -104,10 +103,7 @@ namespace BreganTwitchBot.Connection
                 pubSub.Connect();
             }
 
-
-            
             //Start everything
-
             CommandListener.CommandListenerSetup(); //Commands
             BigBenBong.Bong(); //Big Ben
             RandomUsers.StartGetChattersTimer(); //Get the chatters for random user commands
@@ -123,6 +119,7 @@ namespace BreganTwitchBot.Connection
             //Giveaway
             Giveaways.IsGiveawayOn = false;
             Giveaways.TimerAmount = 60000;
+
         }
     }
 }

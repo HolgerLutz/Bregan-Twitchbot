@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using BreganTwitchBot.Connection;
-using BreganTwitchBot.Database;
 using BreganTwitchBot.TwitchCommands.Points;
 using Discord.WebSocket;
 

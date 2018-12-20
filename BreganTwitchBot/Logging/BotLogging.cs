@@ -16,8 +16,13 @@ namespace BreganTwitchBot.Logging
             TwitchBotConnection.Client.OnUserBanned += UserBanned;
             TwitchBotConnection.Client.OnUserTimedout += UserTimedOut;
             TwitchBotConnection.Client.OnMessageSent += Client_OnMessageSent;
+            TwitchBotConnection.Client.OnError += OnError;
             Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.RollingFile("Logs/log-{Date}.log").CreateLogger();
+        }
 
+        private static void OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)
+        {
+            Log.Error(e.Exception.Message);
         }
 
         private static void Client_OnMessageSent(object sender, TwitchLib.Client.Events.OnMessageSentArgs e)

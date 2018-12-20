@@ -7,12 +7,12 @@ using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands.Gambling
 {
-    public class SlotMachine
+    class SlotMachine
     {
         public void SpinSlotMachine(string username, long pointsGambled)
         {
             var databaseQuery = new DatabaseQueries();
-            var messageLimiter = new CommandLimiter();
+            
             databaseQuery.RemoveUserPoints(username, pointsGambled);
 
             var random = new Random();
@@ -43,41 +43,41 @@ namespace BreganTwitchBot.TwitchCommands.Gambling
             if (emoteList[0] == "Kappa" && emoteList[1] == "Kappa" && emoteList[2] == "Kappa")
             {
                 databaseQuery.ExecuteQuery("UPDATE slotMachine SET tier1Wins = tier1Wins + 1");
-                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 12} WHERE username = '{username}'");
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 12:N0} points!");
+                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 18} WHERE username = '{username}'");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 18:N0} points!");
                 Log.Information($"[Slot Machine] {username} got a Kappa win!");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
             }
             else if (emoteList[0] == "4Head" && emoteList[1] == "4Head" && emoteList[2] == "4Head")
             {
                 databaseQuery.ExecuteQuery("UPDATE slotMachine SET tier2Wins = tier2Wins + 1");
-                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 22} WHERE username = '{username}'");
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 22:N0} points!");
+                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 35} WHERE username = '{username}'");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 35:N0} points!");
                 Log.Information($"[Slot Machine] {username} got a 4Head win!");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
             }
             else if (emoteList[0] == "LUL" && emoteList[1] == "LUL" && emoteList[2] == "LUL")
             {
                 databaseQuery.ExecuteQuery("UPDATE slotMachine SET tier3Wins = tier3Wins + 1");
-                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 50} WHERE username = '{username}'");
-                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 50:N0} points!");
+                databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {pointsGambled * 90} WHERE username = '{username}'");
+                TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 90:N0} points!");
                 Log.Information($"[Slot Machine] {username} got a LUL win!");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
             }
             else if (emoteList[0] == "TriHard" && emoteList[1] == "TriHard" && emoteList[2] == "TriHard")
             {
                 var jackpotAmount = databaseQuery.GetJackpotAmount();
                 databaseQuery.ExecuteQuery("UPDATE slotMachine SET jackpotWins = jackpotWins + 1");
                 databaseQuery.ExecuteQuery($"UPDATE users SET points = points + {jackpotAmount} WHERE username = '{username}'");
-                databaseQuery.ExecuteQuery("UPDATE slotMachine SET jackpotAmount = 0");
+                databaseQuery.ExecuteQuery("UPDATE slotMachine SET jackpotAmount = 200000");
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. DING DING DING JACKPOT!!! You have won {jackpotAmount:N0} points!");
                 Log.Information($"[Slot Machine] {username} won the jackpot!");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
             }
             else
             {
                 TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. No win :(");
-                messageLimiter.AddMessageCount();
+                CommandLimiter.AddMessageCount();
                 databaseQuery.ExecuteQuery($"UPDATE slotMachine SET jackpotAmount = jackpotAmount + {pointsGambled}");
             }
             databaseQuery.ExecuteQuery("UPDATE slotMachine SET totalSpins = totalSpins + 1");
