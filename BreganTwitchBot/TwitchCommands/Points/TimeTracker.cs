@@ -41,9 +41,8 @@ namespace BreganTwitchBot.TwitchCommands.Points
                 var databaseQuery = new DatabaseQueries();
                 connection.Open();
                 var transaction = connection.BeginTransaction();
-
                 var userList = TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync(StartService.ChannelName).Result;
-
+                Log.Information("[Database] User update started");
                 //Update the users
                 foreach (var user in userList)
                 {
@@ -53,9 +52,9 @@ namespace BreganTwitchBot.TwitchCommands.Points
                     }
                     databaseQuery.OnMinuteUserPoints($"INSERT OR IGNORE INTO users (username, minutesInStream, points) VALUES ('{user.Username}',0,0)",transaction, connection);
                     databaseQuery.OnMinuteUserPoints($"UPDATE users SET minutesInStream = minutesInStream +1, points = points + 20 WHERE username='{user.Username}'",transaction, connection);
-                    Log.Information($"[Database] User {user.Username} updated");
                 }
 
+                Log.Information("[Database] User update complete");
                 transaction.Commit();
                 transaction.Dispose();
                 connection.Close();

@@ -19,7 +19,6 @@ namespace BreganTwitchBot.Database
 
                 var sqlConnection = new SqliteConnection(SqlConnectionString);
                 sqlConnection.Open();
-
                 databaseQuery.ExecuteQuery("CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, minutesInStream BIGINT, points BIGINT, lastSongRequest TEXT, isSuperMod INT)");
                 databaseQuery.ExecuteQuery("CREATE TABLE IF NOT EXISTS slotMachine (tier1Wins BIGINT, tier2Wins BIGINT, tier3Wins BIGINT, jackpotWins BIGINT, totalSpins BIGINT, jackpotAmount BIGINT)");
                 databaseQuery.ExecuteQuery("CREATE TABLE IF NOT EXISTS blacklist (word TEXT, type TEXT)");
