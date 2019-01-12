@@ -8,6 +8,7 @@ using BreganTwitchBot.TwitchCommands.FollowAge;
 using BreganTwitchBot.TwitchCommands.Gambling;
 using BreganTwitchBot.TwitchCommands.Giveaway;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using BreganTwitchBot.TwitchCommands.Points;
 using BreganTwitchBot.TwitchCommands.Queue;
 using BreganTwitchBot.TwitchCommands.RandomUser;
 using BreganTwitchBot.TwitchCommands.SongRequests;
@@ -25,6 +26,7 @@ namespace BreganTwitchBot.TwitchCommands
         private static DateTime _gambleCooldown;
         private static DateTime _howLongCooldown;
         private static DateTime _uptimeCooldown;
+        private static DateTime _followsinceCooldown;
         private static bool _srToggle;
         private static DatabaseQueries _databaseQuery;
         private static CustomCommand _customCommand;
@@ -139,6 +141,34 @@ namespace BreganTwitchBot.TwitchCommands
                     CommandLimiter.AddMessageCount();
                     break;
 
+                case "blacklistbot" when e.Command.ChatMessage.IsModerator:
+                case "blacklistbot" when e.Command.ChatMessage.IsBroadcaster:
+                case "blacklistbot" when e.Command.ChatMessage.IsModerator:
+                case "blacklistbot" when e.Command.ChatMessage.IsBroadcaster:
+                    if (e.Command.ChatMessage.Message.ToLower() == "!blacklistbot")
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage of this command is !blacklistbot <username>");
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+                    TimeTracker.BlacklistBot(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
+                    CommandLimiter.AddMessageCount();
+                    break;
+
+                case "removeblacklistbot" when e.Command.ChatMessage.IsModerator:
+                case "removeblacklistbot" when e.Command.ChatMessage.IsBroadcaster:
+                case "removeblacklistbot" when e.Command.ChatMessage.IsModerator:
+                case "removeblacklistbot" when e.Command.ChatMessage.IsBroadcaster:
+                    if (e.Command.ChatMessage.Message.ToLower() == "!removeblacklistbot")
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The usage of this command is !removeblacklistbot <username>");
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+                    TimeTracker.RemoveBlacklistBot(e.Command.ArgumentsAsList[0].ToLower(), e.Command.ChatMessage.Username);
+                    CommandLimiter.AddMessageCount();
+                    break;
+
                 case "howlong":
 
                     if (DateTime.Now - TimeSpan.FromSeconds(2) <= _howLongCooldown)
@@ -158,6 +188,26 @@ namespace BreganTwitchBot.TwitchCommands
                     _howLongCooldown = DateTime.Now;
                     CommandLimiter.AddMessageCount();
                     break;
+
+                case "followsince":
+
+                    if (DateTime.Now - TimeSpan.FromSeconds(2) <= _followsinceCooldown)
+                    {
+                        return;
+                    }
+
+                    if (e.Command.ChatMessage.Message.ToLower() == "!followsince")
+                    {
+                        TwitchBotConnection.Client.SendMessage(StartService.ChannelName, UserFollowAge.GetFollowSince(e.Command.ChatMessage.Username));
+                        _followsinceCooldown = DateTime.Now;
+                        CommandLimiter.AddMessageCount();
+                        break;
+                    }
+
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, UserFollowAge.GetOtherUserFollowSince(e.Command.ChatMessage.Username, e.Command.ArgumentsAsList[0]));
+                    _followsinceCooldown = DateTime.Now;
+                    CommandLimiter.AddMessageCount();
+                    break;
                 //Giveaway commands
                 case "startgiveaway" when e.Command.ChatMessage.IsModerator:
                 case "startgiveaway" when e.Command.ChatMessage.IsBroadcaster:
@@ -167,7 +217,9 @@ namespace BreganTwitchBot.TwitchCommands
                 case "joingiveaway":
                     Giveaways.AddContestant(e.Command.ChatMessage.Username);
                     break;
-
+                case "timeleft":
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => {Giveaways.GetTimeLeft()}");
+                    break;
                 case "amountentered" when e.Command.ChatMessage.IsModerator:
                 case "amountentered" when e.Command.ChatMessage.IsBroadcaster:
                     TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"{Giveaways.AmountOfContestantsEntered()}");
@@ -508,6 +560,8 @@ namespace BreganTwitchBot.TwitchCommands
                     }
 
                     _databaseQuery.AddUserPoints(usernameForPoints, pointsToAdd);
+                    TwitchBotConnection.Client.SendMessage(StartService.ChannelName, $"@{e.Command.ChatMessage.Username} => The points have been added");
+                    CommandLimiter.AddMessageCount();
                     break;
 
                 //Supermods

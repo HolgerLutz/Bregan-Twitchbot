@@ -11,9 +11,13 @@ namespace BreganTwitchBot.Discord
     {
         public static DiscordSocketClient DiscordClient;
 
-        public static async Task MainAsync() 
+        public static async Task MainAsync()
         {
-            DiscordClient = new DiscordSocketClient();
+
+            DiscordClient = new DiscordSocketClient(new DiscordSocketConfig
+            {
+                MessageCacheSize = 2000
+            });
 
             await DiscordClient.LoginAsync(TokenType.Bot, StartService.DiscordAPIKey);
             await DiscordClient.SetGameAsync("Botting");

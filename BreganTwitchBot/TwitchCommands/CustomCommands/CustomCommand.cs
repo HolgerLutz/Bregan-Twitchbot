@@ -109,6 +109,15 @@ namespace BreganTwitchBot.TwitchCommands.CustomCommands
 
             var timesUsed = _commandsDictionary[commandName].Item3;
             _commandsDictionary.Remove(commandName);
+
+            if (commandText.Contains("'"))
+            {
+                var updatedCommandText = commandText.Replace("'", "''");
+                _commandsDictionary.Add(commandName, new Tuple<string, DateTime, long>(commandText, DateTime.Now, timesUsed));
+                _databaseQueries.EditCommandDatabase(commandName, updatedCommandText);
+                return true;
+            }
+
             _commandsDictionary.Add(commandName, new Tuple<string, DateTime, long>(commandText, DateTime.Now, timesUsed));
             _databaseQueries.EditCommandDatabase(commandName, commandText);
             return true;

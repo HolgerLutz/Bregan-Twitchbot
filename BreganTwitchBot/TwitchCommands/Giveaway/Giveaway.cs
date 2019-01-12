@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Timers;
 using BreganTwitchBot.Connection;
 using BreganTwitchBot.TwitchCommands.MessageLimiter;
+using Humanizer;
+using Humanizer.Localisation;
 using Serilog;
 
 namespace BreganTwitchBot.TwitchCommands.Giveaway
@@ -13,6 +15,7 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
         public static int TimerAmount;
         public static bool IsGiveawayOn;
         private static Timer _giveawayTimer;
+        private static DateTime _startTime;
 
         public static void StartGiveaway()
         {
@@ -30,6 +33,7 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
             _giveawayTimer.Start();
             _giveawayTimer.AutoReset = false;
             _giveawayTimer.Elapsed += TimerWinner;
+            _startTime = DateTime.Now;
         }
 
         private static void TimerWinner(object sender, ElapsedEventArgs e)
@@ -114,6 +118,19 @@ namespace BreganTwitchBot.TwitchCommands.Giveaway
             }
             TwitchBotConnection.Client.SendMessage(StartService.ChannelName, "There is no giveaway running!");
             CommandLimiter.AddMessageCount();
+        }
+
+        public static string GetTimeLeft()
+        {
+            if (!IsGiveawayOn)
+            {
+                return "There is no giveaway running!";
+            }
+
+            var sinceTimerStarted = DateTime.Now - _startTime;
+            var timeLeft = TimeSpan.FromMilliseconds(TimerAmount) - sinceTimerStarted;
+
+            return $"The giveaway ends in {timeLeft.Humanize(maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second, precision: 7)}";
         }
     }
 }

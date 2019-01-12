@@ -16,9 +16,35 @@ namespace BreganTwitchBot.Discord
             DiscordConnection.DiscordClient.Log += Log;
             DiscordConnection.DiscordClient.UserJoined += UserJoined;
             DiscordConnection.DiscordClient.UserLeft += UserLeft;
+            DiscordConnection.DiscordClient.MessageDeleted += MessageDeleted;
+            DiscordConnection.DiscordClient.UserIsTyping += DiscordClient_UserIsTyping;
+            DiscordConnection.DiscordClient.MessageReceived += MessageReceived;
             var timer = new Timer(20000);
             timer.Start();
             timer.Elapsed += Timer_Elapsed;
+        }
+
+        private static Task MessageReceived(SocketMessage message)
+        {
+            Serilog.Log.Information($"[Discord Message Received] Username: {message.Author} Message: {message.Content} Channel: {message.Channel.Name}");
+            return Task.CompletedTask;
+        }
+
+        private static Task DiscordClient_UserIsTyping(SocketUser user, ISocketMessageChannel messageChannel)
+        {
+            Serilog.Log.Information($"[Discord Typing] {user.Username} is typing a message in {messageChannel.Name}");
+            return Task.CompletedTask;
+        }
+
+        private static Task MessageDeleted(Cacheable<IMessage, ulong> deletedMessage, ISocketMessageChannel arg2)
+        {
+            if (!deletedMessage.HasValue || deletedMessage.Value.Author.Id == DiscordConnection.DiscordClient.CurrentUser.Id)
+            {
+                return Task.CompletedTask;
+            }
+            DiscordConnection.SendMessage(StartService.DiscordEventChannelID, $"Message Deleted: {deletedMessage.Value.Content} \nSent By: {deletedMessage.Value.Author} \nIn Channel: {deletedMessage.Value.Channel.Name} \nDeleted at: {DateTime.Now}");
+            Serilog.Log.Information($"[Discord Message Deleted] Message Deleted: {deletedMessage.Value.Content} Sent By: {deletedMessage.Value.Author.Username} In Channel: {deletedMessage.Value.Channel.Name} Deleted at: {DateTime.Now}");
+            return Task.CompletedTask;
         }
 
         private static void Timer_Elapsed(object sender, ElapsedEventArgs e)

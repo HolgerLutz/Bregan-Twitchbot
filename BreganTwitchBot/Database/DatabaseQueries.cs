@@ -21,7 +21,6 @@ namespace BreganTwitchBot.Database
         {
             var sqlCommand = new SqliteCommand(query, connection, transaction);
             sqlCommand.ExecuteNonQuery();
-            sqlCommand.Dispose();
         }
 
         public long GetUserPoints(string username)
@@ -401,7 +400,7 @@ namespace BreganTwitchBot.Database
 
         public void DeleteCommandDatabase(string commandName)
         {
-            ExecuteQuery("DELETE FROM commands WHERE commandName='{commandName}'");
+            ExecuteQuery($"DELETE FROM commands WHERE commandName='{commandName}'");
         }
 
         public void EditCommandDatabase(string commandName, string commandText)

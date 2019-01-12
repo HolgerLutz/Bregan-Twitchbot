@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Logging
             TwitchBotConnection.Client.OnUserTimedout += UserTimedOut;
             TwitchBotConnection.Client.OnMessageSent += Client_OnMessageSent;
             TwitchBotConnection.Client.OnError += OnError;
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.RollingFile("Logs/log-{Date}.log").CreateLogger();
+            Log.Logger = new LoggerConfiguration().WriteTo.Console().WriteTo.RollingFile("Logs/log-{Date}.log", retainedFileCountLimit: null).CreateLogger();
         }
 
         private static void OnError(object sender, TwitchLib.Communication.Events.OnErrorEventArgs e)

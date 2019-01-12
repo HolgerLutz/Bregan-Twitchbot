@@ -11,22 +11,25 @@ namespace BreganTwitchBot.Connection
     class TwitchBotConnection
     {
         public static TwitchClient Client;
-        private readonly ConnectionCredentials _credentials = new ConnectionCredentials(StartService.BotName, StartService.BotOAuth);
+        private static readonly ConnectionCredentials Credentials = new ConnectionCredentials(StartService.BotName, StartService.BotOAuth);
 
         internal void Connect()
         {
             Log.Information("Attempting to connect to twitch chat");
             Client = new TwitchClient();
-            Client.Initialize(_credentials, StartService.ChannelName);
+            Client.Initialize(Credentials, StartService.ChannelName);
             Client.Connect();
-
             Client.OnConnected += OnConnectedToChannel;
-            Client.OnDisconnected += OnDisconnectedToChannel;
+            Client.OnDisconnected += OnDisconnectedFromChannel;
         }
 
-        private static void OnDisconnectedToChannel(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
+        private static void OnDisconnectedFromChannel(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
         {
-            Log.Information("[Bot Connection] Bot disconnected from channel");
+            Log.Warning("[Bot Connection] Bot disconnected from channel. Attempting to reconnect");
+            Client = new TwitchClient();
+            Client.Initialize(Credentials, StartService.ChannelName);
+            Client.Connect();
+            Client.SendMessage(StartService.ChannelName, "Successfully reconnected!");
         }
 
         private static void OnConnectedToChannel(object sender, TwitchLib.Client.Events.OnConnectedArgs e)
